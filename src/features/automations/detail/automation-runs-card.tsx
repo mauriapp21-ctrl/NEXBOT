@@ -36,7 +36,9 @@ export function AutomationRunsCard({ executions }: { executions: Execution[] }) 
               >
                 <StatusBadge kind="execution" status={execution.status} size="sm" />
                 <span className="text-muted-foreground">{formatDateTime(execution.startedAt)}</span>
-                <span className="text-muted-foreground">v{execution.versionNumber}</span>
+                <span className="text-muted-foreground">
+                  {execution.versionNumber > 0 ? `v${execution.versionNumber}` : "Sin publicar"}
+                </span>
                 <span className="hidden text-muted-foreground sm:inline">{triggerLabels[execution.trigger]}</span>
                 <span className="ml-auto text-muted-foreground">
                   {execution.status === "running" ? "En curso" : formatDuration(execution.durationMs)}
