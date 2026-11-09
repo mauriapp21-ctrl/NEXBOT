@@ -20,6 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { isNavItemActive, navSections } from "@/lib/navigation";
+import { useSettingsStore } from "@/stores/settings-store";
 
 function Logo() {
   return (
@@ -37,6 +38,7 @@ function Logo() {
 export function AppSidebar() {
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
+  const plantName = useSettingsStore((s) => s.settings?.plantName);
   const closeOnMobile = () => {
     if (isMobile) setOpenMobile(false);
   };
@@ -51,7 +53,7 @@ export function AppSidebar() {
                 <Logo />
                 <span className="grid leading-tight">
                   <span className="text-sm font-semibold text-sidebar-accent-foreground">RPA Studio</span>
-                  <span className="text-xs text-sidebar-muted">Planta de proceso</span>
+                  <span className="truncate text-xs text-sidebar-muted">{plantName ?? "Planta de proceso"}</span>
                 </span>
               </Link>
             </SidebarMenuButton>

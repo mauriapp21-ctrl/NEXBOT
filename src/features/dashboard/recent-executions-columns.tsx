@@ -35,6 +35,7 @@ export interface ExecutionRow {
   trigger: ExecutionTrigger;
   triggeredBy: string;
   selectorIssueId?: string;
+  engine: "Real" | "Simulada";
 }
 
 export const executionTableFeatures = tableFeatures({
@@ -112,6 +113,13 @@ export const executionColumns = helper.columns([
         <span className="whitespace-nowrap text-muted-foreground">{formatDuration(row.original.durationMs)}</span>
       ),
   }),
+  helper.accessor("engine", {
+    header: "Motor",
+    enableSorting: false,
+    cell: ({ row }) => (
+      <span className={row.original.engine === "Real" ? "font-medium text-teal-ink" : "text-muted-foreground"}>{row.original.engine}</span>
+    ),
+  }),
   helper.accessor("trigger", {
     header: "Origen",
     enableSorting: false,
@@ -133,6 +141,7 @@ export const executionColumns = helper.columns([
 export const responsiveColumnClass: Record<string, string> = {
   startedAt: "hidden sm:table-cell",
   durationMs: "hidden md:table-cell",
+  engine: "hidden lg:table-cell",
   trigger: "hidden xl:table-cell",
   triggeredBy: "hidden 2xl:table-cell",
 };

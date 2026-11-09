@@ -41,15 +41,15 @@ export const mockMaintenanceService: MaintenanceService = {
       selectorIssues: existing ? state.selectorIssues.map((i) => (i.id === issue.id ? issue : i)) : [issue, ...state.selectorIssues],
       automations: state.automations.map((a) => (a.id === updated.id ? updated : a)),
       notifications: [
-        {
+        ...(!state.settings.notifyOnMaintenance ? [] : [{
           id: createId("ntf"),
-          kind: "maintenance",
+          kind: "maintenance" as const,
           title: `Selector a revisar en "${automation.name}"`,
           description: `"${issue.previousLabel}" ya no aparece; se detectó "${issue.detectedLabel}".`,
           createdAt: now,
           read: false,
           href: `/maintenance/${automation.id}`,
-        },
+        }]),
         ...state.notifications,
       ],
     }));

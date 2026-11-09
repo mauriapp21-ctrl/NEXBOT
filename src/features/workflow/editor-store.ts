@@ -3,6 +3,7 @@
 import { create } from "zustand";
 
 import { createStep } from "@/lib/workflow";
+import { useSettingsStore } from "@/stores/settings-store";
 import type { ActionType, Automation, AutomationVariable, ExecutionStepStatus, Workflow, WorkflowNode } from "@/types";
 
 import { autoLayout, connectNodes, insertNode, removeEdge, removeNode } from "./graph";
@@ -92,7 +93,12 @@ export const useEditorStore = create<EditorStore>()((set, get) => {
     setVariables: (variables) => set({ variables }),
 
     addStep(type, afterId) {
-      const step = createStep(type, { source: "manual" });
+      // New steps use the platform defaults from Configuración.
+      const defaults = useSettingsStore.getState().settings;
+      const base = createStep(type, { source: "manual" });
+      const step = defaults
+        ? { ...base, retries: defaults.defaultRetries, timeoutMs: base.timeoutMs === 10_000 ? defaults.defaultTimeoutSeconds * 1000 : base.timeoutMs }
+        : base;
       const node: WorkflowNode = { ...step, position: { x: 0, y: 0 } };
       commit({ workflow: insertNode(get().workflow, node, afterId ?? get().selectedId), selectedId: node.id });
       return node.id;

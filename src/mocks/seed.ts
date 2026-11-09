@@ -9,6 +9,8 @@ import type {
   SelectorIssue,
   TargetDesign,
   User,
+  AppSettings,
+  Integration,
 } from "@/types";
 
 import { createSeedAutomations } from "./automations";
@@ -25,9 +27,34 @@ export interface DemoData {
   roles: Role[];
   notifications: AppNotification[];
   targetDesign: TargetDesign;
+  settings: AppSettings;
+  integrations: Integration[];
 }
 
 const SEED = 20_26;
+
+export function initialSettings(): AppSettings {
+  return {
+    plantName: "Planta de proceso Puerto Montt",
+    timezone: "America/Santiago",
+    defaultTimeoutSeconds: 10,
+    defaultRetries: 1,
+    notifyOnFailure: true,
+    notifyOnMaintenance: true,
+    notifyDailySummary: false,
+  };
+}
+
+export function initialIntegrations(now: Date = new Date()): Integration[] {
+  const at = new Date(now.getTime() - 20 * 86_400_000).toISOString();
+  return [
+    { id: "int_engine", kind: "local_engine", name: "Motor real local", description: "Ejecuta y graba bots en Google Chrome en este equipo (pnpm engine).", connected: false, config: {} },
+    { id: "int_email", kind: "email", name: "Correo (SMTP)", description: "Envía avisos de fallas y el resumen diario por correo.", connected: true, config: { servidor: "smtp.planta-demo.cl", remitente: "rpa@planta-demo.cl" }, connectedAt: at },
+    { id: "int_webhook", kind: "webhook", name: "Webhook de avisos", description: "Publica eventos (ejecución fallida, versión publicada) en una URL.", connected: false, config: {} },
+    { id: "int_folder", kind: "shared_folder", name: "Carpeta compartida", description: "Lee archivos de entrada y guarda descargas en una carpeta de red.", connected: true, config: { ruta: "\\servidor-planta\rpa" }, connectedAt: at },
+    { id: "int_api", kind: "api", name: "API de RPA Studio", description: "Permite que otros sistemas inicien bots y consulten resultados.", connected: false, config: {} },
+  ];
+}
 
 /** The simulated system starts with the original UI and will update once. */
 export function initialTargetDesign(): TargetDesign {
@@ -169,5 +196,7 @@ export function createSeed(now: Date = new Date()): DemoData {
     roles: createSeedRoles(),
     notifications: createNotifications(executions, selectorIssues, automations, versions, now),
     targetDesign: initialTargetDesign(),
+    settings: initialSettings(),
+    integrations: initialIntegrations(now),
   };
 }

@@ -50,3 +50,26 @@ export interface EngineStatus {
   queuedJobs: number;
   checkedAt: string;
 }
+
+export interface AppSettings {
+  plantName: string;
+  timezone: string;
+  defaultTimeoutSeconds: number;
+  defaultRetries: number;
+  notifyOnFailure: boolean;
+  notifyOnMaintenance: boolean;
+  notifyDailySummary: boolean;
+}
+
+export type IntegrationKind = "email" | "webhook" | "shared_folder" | "api" | "local_engine";
+
+export interface Integration {
+  id: string;
+  kind: IntegrationKind;
+  name: string;
+  description: string;
+  connected: boolean;
+  /** Simple key/value configuration shown in the connect dialog. */
+  config: Record<string, string>;
+  connectedAt?: string;
+}

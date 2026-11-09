@@ -67,7 +67,24 @@ export const mockExecutionService: ExecutionService = {
     const current = find(id);
     // A stopped execution is final; late progress reports are ignored.
     if (current.status === "stopped") return clone(current);
-    return save({ ...current, ...patch });
+    const next = save({ ...current, ...patch });
+    if (patch.status === "failed" && current.status !== "failed" && getDb().settings.notifyOnFailure) {
+      updateDb((db) => ({
+        notifications: [
+          {
+            id: createId("ntf"),
+            kind: "execution_failed",
+            title: `Falló "${current.automationName}"`,
+            description: patch.errorMessage ?? "La ejecución terminó con errores.",
+            createdAt: new Date().toISOString(),
+            read: false,
+            href: `/executions/${id}`,
+          },
+          ...db.notifications,
+        ],
+      }));
+    }
+    return next;
   },
 
   async stop(id) {

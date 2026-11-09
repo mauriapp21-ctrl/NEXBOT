@@ -3,7 +3,7 @@
 import { useTable } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, History } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
@@ -22,15 +22,33 @@ import {
 } from "./recent-executions-columns";
 
 const ALL = "all";
-const PAGE_SIZE = 8;
 
 interface RecentExecutionsTableProps {
   executions: Execution[];
   users: User[];
   loading: boolean;
+  title?: string;
+  description?: string;
+  pageSize?: number;
+  /** Link to the full history (hidden on the history page itself). */
+  showViewAll?: boolean;
+  /** Extra filters rendered next to the status filter. */
+  toolbar?: ReactNode;
+  /** Message when the (already filtered) data is empty, e.g. due to page filters. */
+  emptyFilteredMessage?: string;
 }
 
-export function RecentExecutionsTable({ executions, users, loading }: RecentExecutionsTableProps) {
+export function RecentExecutionsTable({
+  executions,
+  users,
+  loading,
+  title = "Últimas ejecuciones",
+  description = "Últimos 30 días",
+  pageSize: PAGE_SIZE = 8,
+  showViewAll = true,
+  toolbar,
+  emptyFilteredMessage,
+}: RecentExecutionsTableProps) {
   const data = useMemo<ExecutionRow[]>(
     () =>
       executions.map((e) => ({
@@ -43,6 +61,7 @@ export function RecentExecutionsTable({ executions, users, loading }: RecentExec
         trigger: e.trigger,
         triggeredBy: users.find((u) => u.id === e.triggeredById)?.name ?? "Sistema",
         selectorIssueId: e.selectorIssueId,
+        engine: e.engine === "local" ? "Real" : "Simulada",
       })),
     [executions, users],
   );
@@ -68,11 +87,12 @@ export function RecentExecutionsTable({ executions, users, loading }: RecentExec
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
         <div>
           <h2 id="recent-executions-title" className="text-sm font-semibold">
-            Últimas ejecuciones
+            {title}
           </h2>
-          <p className="text-xs text-muted-foreground">Últimos 30 días</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {toolbar}
           <Select
             value={statusFilter}
             onValueChange={(value) => table.getColumn("status")?.setFilterValue(value === ALL ? undefined : value)}
@@ -89,9 +109,11 @@ export function RecentExecutionsTable({ executions, users, loading }: RecentExec
               ))}
             </SelectContent>
           </Select>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/executions">Ver todo</Link>
-          </Button>
+          {showViewAll && (
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/executions">Ver todo</Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -105,10 +127,10 @@ export function RecentExecutionsTable({ executions, users, loading }: RecentExec
         <EmptyState
           variant="compact"
           icon={History}
-          title={data.length === 0 ? "Aún no hay ejecuciones" : "No hay ejecuciones con ese estado"}
-          description={data.length === 0 ? "Ejecuta un bot para ver su historial aquí." : "Prueba con otro filtro."}
+          title={data.length === 0 ? (emptyFilteredMessage ?? "Aún no hay ejecuciones") : "No hay ejecuciones con ese estado"}
+          description={data.length === 0 && !emptyFilteredMessage ? "Ejecuta un bot para ver su historial aquí." : "Prueba con otro filtro."}
           actions={
-            data.length === 0 ? (
+            data.length === 0 && !emptyFilteredMessage ? (
               <Button asChild size="sm">
                 <Link href="/automations">Ir a mis automatizaciones</Link>
               </Button>

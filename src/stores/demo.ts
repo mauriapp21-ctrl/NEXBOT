@@ -5,6 +5,7 @@ import { demoService } from "@/services";
 import { useAutomationStore } from "./automation-store";
 import { useExecutionStore } from "./execution-store";
 import { useSessionStore } from "./session-store";
+import { useSettingsStore } from "./settings-store";
 
 /** Restores the seed dataset and reloads every cached store. */
 export async function resetDemoData(): Promise<void> {
@@ -13,5 +14,6 @@ export async function resetDemoData(): Promise<void> {
     useAutomationStore.getState().load({ force: true }),
     useExecutionStore.getState().load({ force: true }),
     useSessionStore.getState().load({ force: true }),
+    useSettingsStore.getState().load(),
   ]);
 }

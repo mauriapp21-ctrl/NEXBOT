@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { TemplatesView } from "@/features/templates/templates-view";
 
 export const metadata: Metadata = { title: "Plantillas" };
 
-export default function PlantillasPage() {
-  return (
-    <PhasePlaceholder
-      title="Plantillas"
-      description="Crea bots a partir de procesos frecuentes."
-      phase={7}
-    />
-  );
+export default function TemplatesPage() {
+  return <TemplatesView />;
 }

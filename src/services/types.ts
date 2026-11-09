@@ -1,6 +1,9 @@
 import type {
   AppNotification,
+  AppSettings,
   Automation,
+  AutomationTemplate,
+  Integration,
   AutomationStatus,
   AutomationVersion,
   EngineStatus,
@@ -111,12 +114,30 @@ export interface MaintenanceService {
   publishTargetUpdate(): Promise<TargetDesign | null>;
 }
 
+export interface TemplateService {
+  list(): Promise<AutomationTemplate[]>;
+  /** Creates a draft bot with the template steps, variables and files. */
+  createFromTemplate(templateId: string, name: string): Promise<Automation>;
+}
+
+export interface SettingsService {
+  get(): Promise<AppSettings>;
+  update(patch: Partial<AppSettings>): Promise<AppSettings>;
+}
+
+export interface IntegrationService {
+  list(): Promise<Integration[]>;
+  connect(id: string, config: Record<string, string>): Promise<Integration>;
+  disconnect(id: string): Promise<Integration>;
+}
+
 export interface UserService {
   getCurrentUser(): Promise<User>;
   listUsers(): Promise<User[]>;
   listRoles(): Promise<Role[]>;
   updateRole(userId: string, roleId: RoleId): Promise<User>;
   setActive(userId: string, active: boolean): Promise<User>;
+  invite(input: Pick<User, "name" | "email" | "roleId" | "jobTitle">): Promise<User>;
 }
 
 export interface NotificationService {

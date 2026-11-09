@@ -66,3 +66,17 @@ export interface Automation {
   hasUnpublishedChanges: boolean;
   tags: string[];
 }
+
+export interface AutomationTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: AutomationCategory;
+  estimatedManualMinutes: number;
+  workflow: Workflow;
+  variables: AutomationVariable[];
+  inputFiles: InputFile[];
+  tags: string[];
+  /** Real-site templates set their own target URL. */
+  targetUrl?: string;
+}

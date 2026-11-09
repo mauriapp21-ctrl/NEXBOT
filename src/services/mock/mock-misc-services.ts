@@ -1,3 +1,4 @@
+import { createId } from "@/lib/random";
 import { buildLinearWorkflow } from "@/lib/workflow";
 import { CURRENT_USER_ID } from "@/mocks/users";
 import type {
@@ -59,6 +60,16 @@ export const mockUserService: UserService = {
       throw new ServiceError("No puedes quitarte el rol de Administrador.", "validation");
     }
     return saveUser({ ...findUser(userId), roleId });
+  },
+  async invite(input) {
+    await simulateLatency();
+    const email = input.email.trim().toLowerCase();
+    if (getDb().users.some((u) => u.email.toLowerCase() === email)) {
+      throw new ServiceError("Ya existe un usuario con ese correo.", "conflict");
+    }
+    const user: User = { ...input, email, id: createId("usr"), active: true, lastActiveAt: new Date().toISOString() };
+    updateDb((db) => ({ users: [...db.users, user] }));
+    return clone(user);
   },
   async setActive(userId, active) {
     await simulateLatency();
