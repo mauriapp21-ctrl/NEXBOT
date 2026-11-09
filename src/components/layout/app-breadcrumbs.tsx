@@ -16,6 +16,9 @@ import { segmentLabels } from "@/lib/navigation";
 import { useAutomationStore } from "@/stores/automation-store";
 import { useExecutionStore } from "@/stores/execution-store";
 
+/** Segments that are grouping folders without their own page. */
+const NON_LINKABLE = new Set(["dev"]);
+
 /** Breadcrumbs derived from the URL; ids are resolved to entity names. */
 export function AppBreadcrumbs() {
   const pathname = usePathname();
@@ -29,7 +32,7 @@ export function AppBreadcrumbs() {
       segmentLabels[segment] ??
       automations.find((a) => a.id === segment)?.name ??
       (executions.some((e) => e.id === segment) ? `Ejecución ${segment.slice(-6)}` : decodeURIComponent(segment));
-    return { href, label };
+    return { href, label, linkable: !NON_LINKABLE.has(segment) };
   });
 
   if (crumbs.length === 0) return null;
@@ -45,6 +48,8 @@ export function AppBreadcrumbs() {
               <BreadcrumbItem className={last ? "min-w-0" : "hidden sm:inline-flex"}>
                 {last ? (
                   <BreadcrumbPage className="truncate font-medium">{crumb.label}</BreadcrumbPage>
+                ) : !crumb.linkable ? (
+                  <span className="whitespace-nowrap">{crumb.label}</span>
                 ) : (
                   <BreadcrumbLink asChild>
                     <Link href={crumb.href} className="whitespace-nowrap">

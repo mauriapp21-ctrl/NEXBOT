@@ -27,7 +27,7 @@ export function TokensShowcase() {
     <ShowcaseSection
       id="tokens"
       title="Tokens de color"
-      description="Variables CSS con su par para modo oscuro. Los componentes usan siempre el token, nunca el hex."
+      description="Variables CSS con su par para modo oscuro (los hex indicados son los del modo claro). Los componentes usan siempre el token, nunca el hex."
     >
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         {swatches.map((swatch) => (
