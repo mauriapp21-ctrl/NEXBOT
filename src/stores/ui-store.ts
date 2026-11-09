@@ -15,6 +15,11 @@ export const useUiStore = create<UiStore>()(
       automationsView: "grid",
       setAutomationsView: (automationsView) => set({ automationsView }),
     }),
-    { name: "rpa-studio-ui", storage: createJSONStorage(() => localStorage) },
+    {
+      name: "rpa-studio-ui",
+      storage: createJSONStorage(() => localStorage),
+      // Rehydrated after mount (DataBootstrap) to avoid SSR mismatches.
+      skipHydration: true,
+    },
   ),
 );

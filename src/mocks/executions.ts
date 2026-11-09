@@ -41,8 +41,8 @@ interface RunPlan {
 
 const runPlans: Record<Automation["status"], RunPlan | null> = {
   active: { dailyChance: 0.32, minDaysAgo: 0, maxDaysAgo: 29 },
-  maintenance: { dailyChance: 0.3, minDaysAgo: 0, maxDaysAgo: 29, failingSinceDaysAgo: 2 },
-  error: { dailyChance: 0.3, minDaysAgo: 0, maxDaysAgo: 29, failingSinceDaysAgo: 3 },
+  maintenance: { dailyChance: 0.18, minDaysAgo: 0, maxDaysAgo: 29, failingSinceDaysAgo: 1 },
+  error: { dailyChance: 0.18, minDaysAgo: 0, maxDaysAgo: 29, failingSinceDaysAgo: 2 },
   disabled: { dailyChance: 0.4, minDaysAgo: 18, maxDaysAgo: 29 },
   draft: null,
 };
@@ -139,10 +139,14 @@ export function createSeedExecutions(automations: Automation[], now: Date, rng: 
     for (let daysAgo = plan.maxDaysAgo; daysAgo >= plan.minDaysAgo; daysAgo -= 1) {
       const failing = plan.failingSinceDaysAgo !== undefined && daysAgo <= plan.failingSinceDaysAgo;
       // Broken bots always ran on their failing days, so the failure is visible.
-      if (!failing && !rng.chance(plan.dailyChance)) continue;
+      // Scheduled bots almost always ran today, so the dashboard has data for "hoy".
+      const isActive = automation.status === "active";
+      const chance = isActive && daysAgo === 0 ? 0.9 : isActive && daysAgo < 7 ? 0.6 : plan.dailyChance;
+      if (!failing && !rng.chance(chance)) continue;
 
       const start = new Date(startOfToday.getTime() - daysAgo * 86_400_000);
-      start.setHours(rng.int(6, 19), rng.int(0, 59), rng.int(0, 59));
+      const latestHour = daysAgo === 0 ? Math.max(0, now.getHours() - 1) : 19;
+      start.setHours(rng.int(Math.min(6, latestHour), Math.max(Math.min(6, latestHour), latestHour)), rng.int(0, 59), rng.int(0, 59));
       if (start.getTime() > now.getTime() - 20 * 60_000) continue; // no future runs
 
       let outcome: { status: ExecutionStatus; failIndex?: number; warnIndex?: number };

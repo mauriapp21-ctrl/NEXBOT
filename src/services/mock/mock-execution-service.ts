@@ -63,7 +63,10 @@ export const mockExecutionService: ExecutionService = {
 
   async update(id, patch) {
     // Progress updates come from the local simulator: no added latency.
-    return save({ ...find(id), ...patch });
+    const current = find(id);
+    // A stopped execution is final; late progress reports are ignored.
+    if (current.status === "stopped") return clone(current);
+    return save({ ...current, ...patch });
   },
 
   async stop(id) {

@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { DashboardView } from "@/features/dashboard/dashboard-view";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default function DashboardPage() {
-  return (
-    <PhasePlaceholder
-      title="Dashboard"
-      description="Resumen de bots, ejecuciones y tiempo ahorrado."
-      phase={2}
-    />
-  );
+  return <DashboardView />;
 }

@@ -1,4 +1,8 @@
+import { Plus } from "lucide-react";
+import Link from "next/link";
+
 import { AppBreadcrumbs } from "@/components/layout/app-breadcrumbs";
+import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { NotificationsMenu } from "@/components/layout/notifications-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -18,6 +22,16 @@ export function AppHeader() {
       <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
       <AppBreadcrumbs />
       <div className="ml-auto flex items-center gap-1">
+        <Button asChild size="sm" className="mr-1 hidden sm:inline-flex">
+          <Link href="/automations/new">
+            <Plus aria-hidden /> Crear automatización
+          </Link>
+        </Button>
+        <Button asChild size="icon-sm" className="mr-1 sm:hidden" aria-label="Crear automatización">
+          <Link href="/automations/new">
+            <Plus aria-hidden />
+          </Link>
+        </Button>
         <GlobalSearch />
         <ThemeToggle />
         <NotificationsMenu />
