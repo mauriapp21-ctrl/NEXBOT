@@ -1,5 +1,6 @@
 "use client";
 
+import { engineBaseUrl, isRemoteAccess } from "@/lib/engine-mode";
 import type { Step } from "@/types";
 
 /**
@@ -42,7 +43,7 @@ export interface RealRecordingEvent {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${ENGINE_URL}${path}`, {
+  const response = await fetch(`${engineBaseUrl(ENGINE_URL)}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
@@ -57,7 +58,7 @@ function subscribe<T extends { type: string }>(
   onEvent: (event: T) => void,
   onError: () => void,
 ): () => void {
-  const source = new EventSource(`${ENGINE_URL}${path}`);
+  const source = new EventSource(`${engineBaseUrl(ENGINE_URL)}${path}`);
   let finished = false;
   const close = () => {
     finished = true;
@@ -82,7 +83,7 @@ export const localEngine = {
   async status(): Promise<LocalEngineInfo | null> {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 1500);
+      const timer = setTimeout(() => controller.abort(), isRemoteAccess() ? 6000 : 1500);
       const info = await request<LocalEngineInfo>("/status", { signal: controller.signal });
       clearTimeout(timer);
       return info;
@@ -95,7 +96,7 @@ export const localEngine = {
   subscribeRun: (runId: string, onEvent: (event: RealRunEvent) => void, onError: () => void) =>
     subscribe<RealRunEvent>(`/runs/${runId}/events`, onEvent, onError),
   stopRun: (runId: string) => request<{ stopped: boolean }>(`/runs/${runId}/stop`, { method: "POST" }),
-  screenshotUrl: (path: string) => `${ENGINE_URL}${path}`,
+  screenshotUrl: (path: string) => `${engineBaseUrl(ENGINE_URL)}${path}`,
   startRecording: (url: string) =>
     request<{ recordingId: string }>("/recordings", { method: "POST", body: JSON.stringify({ url }) }),
   subscribeRecording: (id: string, onEvent: (event: RealRecordingEvent) => void, onError: () => void) =>

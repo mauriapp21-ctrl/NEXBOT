@@ -2,12 +2,12 @@
 
 import { Circle, Globe, Loader2, MonitorPlay, RotateCw, Save, Square, TerminalSquare, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Button } from "@/components/ui/button";
-import { isRemoteAccess } from "@/lib/engine-mode";
+import { ENGINE_ACCESS_TEXT, LoginButton, useEngineAccess } from "@/features/auth/engine-access";
 import { formatClock } from "@/lib/format";
 import { createId } from "@/lib/random";
 import { recorderService } from "@/services";
@@ -19,7 +19,6 @@ import { ActionTimeline } from "../action-timeline";
 import { SECRET_VARIABLE } from "./real-recording";
 import { useRealRecorder } from "./use-real-recorder";
 
-const noopSubscribe = () => () => {};
 
 export function RealRecorderView({ automation }: { automation: Automation }) {
   const router = useRouter();
@@ -31,7 +30,9 @@ export function RealRecorderView({ automation }: { automation: Automation }) {
   const [saving, setSaving] = useState(false);
   const [confirmReplace, setConfirmReplace] = useState(false);
   const { status, interactions } = recorder;
-  const remote = useSyncExternalStore(noopSubscribe, isRemoteAccess, () => false);
+  const access = useEngineAccess();
+  const offline = access === "checking" || access === "ready" ? null : ENGINE_ACCESS_TEXT[access];
+  const remoteUser = useEngineStore((s) => s.session?.user ?? null);
   const existingSteps = automation.workflow.nodes.length;
 
   const save = async () => {
@@ -130,20 +131,18 @@ export function RealRecorderView({ automation }: { automation: Automation }) {
             <>
               <TerminalSquare className="size-8 text-muted-foreground" aria-hidden />
               <div className="max-w-md space-y-1">
-                <p className="font-medium">
-                  {remote ? "El motor real no está disponible desde este enlace" : "El motor real local no está en ejecución"}
-                </p>
+                <p className="font-medium">{offline?.title ?? "Verificando el motor real…"}</p>
                 <p className="text-sm text-muted-foreground">
-                  Este bot trabaja en un sitio web real ({automation.targetUrl}).{" "}
-                  {remote
-                    ? "Por seguridad, el motor solo acepta la app abierta en el mismo equipo donde corre. Ábrela en:"
-                    : "Para grabarlo, abre una terminal en la carpeta del proyecto y ejecuta:"}
+                  Este bot trabaja en un sitio web real ({automation.targetUrl}). {offline?.description}
                 </p>
               </div>
-              <code className="rounded-md bg-muted px-3 py-1.5 font-mono text-sm">{remote ? "http://localhost:3000" : "pnpm engine"}</code>
-              <Button variant="outline" onClick={() => void refreshEngine()}>
-                <RotateCw aria-hidden /> Volver a verificar
-              </Button>
+              {offline?.code && <code className="rounded-md bg-muted px-3 py-1.5 font-mono text-sm">{offline.code}</code>}
+              <div className="flex flex-wrap justify-center gap-2">
+                {access === "remote-login" && <LoginButton />}
+                <Button variant="outline" onClick={() => void refreshEngine()}>
+                  <RotateCw aria-hidden /> Volver a verificar
+                </Button>
+              </div>
             </>
           ) : (
             <>
@@ -162,6 +161,12 @@ export function RealRecorderView({ automation }: { automation: Automation }) {
                 <Globe className="size-3.5 shrink-0" aria-hidden />
                 <span className="truncate">{recorder.lastUrl ?? automation.targetUrl}</span>
               </p>
+              {remoteUser && (
+                <p role="note" className="max-w-lg rounded-md bg-warning/12 px-3 py-2 text-xs text-warning-ink">
+                  Acceso remoto ({remoteUser}): la ventana de Chrome se abre en el equipo servidor, no en el tuyo. Para grabar,
+                  alguien debe trabajar en esa ventana; desde aquí verás los pasos a medida que se registran.
+                </p>
+              )}
               <p className="max-w-lg text-xs text-muted-foreground">
                 Las contraseñas no se guardan: se reemplazan por la variable secreta {`{{${SECRET_VARIABLE}}}`}. Los archivos que
                 adjuntes deben estar en la carpeta de entrada del motor ({engine.filesDir}) para ejecutarse después.

@@ -1,16 +1,15 @@
 "use client";
 
 import { MonitorPlay, Server, TerminalSquare } from "lucide-react";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { isRemoteAccess } from "@/lib/engine-mode";
+import { ENGINE_ACCESS_TEXT, LoginButton, LogoutButton, useEngineAccess } from "@/features/auth/engine-access";
 import { cn } from "@/lib/utils";
 import { useEngineStore } from "@/stores/engine-store";
 
 const POLL_MS = 8_000;
-const noopSubscribe = () => () => {};
 
 /**
  * Engine indicator. "Real" when the local engine (pnpm engine) is running:
@@ -20,7 +19,9 @@ const noopSubscribe = () => () => {};
 export function EngineStatusIndicator() {
   const local = useEngineStore((s) => s.local);
   const checked = useEngineStore((s) => s.checked);
-  const remote = useSyncExternalStore(noopSubscribe, isRemoteAccess, () => false);
+  const session = useEngineStore((s) => s.session);
+  const access = useEngineAccess();
+  const offline = access === "checking" || access === "ready" ? null : ENGINE_ACCESS_TEXT[access];
 
   useEffect(() => {
     const refresh = () => void useEngineStore.getState().refresh();
@@ -80,7 +81,14 @@ export function EngineStatusIndicator() {
                   <dd className="font-mono">{local.version}</dd>
                   <dt className="text-muted-foreground">Archivos</dt>
                   <dd className="font-mono break-all">{local.filesDir}</dd>
+                  {session?.user && (
+                    <>
+                      <dt className="text-muted-foreground">Sesión</dt>
+                      <dd className="font-medium">{session.user} (acceso remoto)</dd>
+                    </>
+                  )}
                 </dl>
+                {session?.user && <LogoutButton />}
               </div>
             ) : (
               <div className="space-y-3">
@@ -89,14 +97,21 @@ export function EngineStatusIndicator() {
                   <p className="text-sm font-medium">Motor simulado</p>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  La grabación y la ejecución son simulaciones guionadas dentro del navegador.{" "}
-                  {remote
-                    ? "Abriste la app desde otra dirección: el motor real solo acepta la app abierta en el equipo donde corre."
-                    : "Para trabajar con sitios web reales, inicia el motor local:"}
+                  La grabación y la ejecución de los bots de demostración son simulaciones guionadas dentro del navegador.
                 </p>
-                <p className="flex items-center gap-2 rounded-md bg-muted px-2 py-1.5 font-mono text-xs">
-                  <TerminalSquare className="size-3.5 shrink-0" aria-hidden /> {remote ? "http://localhost:3000" : "pnpm engine"}
-                </p>
+                {offline && (
+                  <>
+                    <p className="text-xs font-medium">{offline.title}</p>
+                    <p className="text-xs text-muted-foreground">{offline.description}</p>
+                    {offline.code && (
+                      <p className="flex items-center gap-2 rounded-md bg-muted px-2 py-1.5 font-mono text-xs">
+                        <TerminalSquare className="size-3.5 shrink-0" aria-hidden /> {offline.code}
+                      </p>
+                    )}
+                  </>
+                )}
+                {access === "remote-login" && <LoginButton size="sm" />}
+                {access === "remote-off" && <LogoutButton />}
               </div>
             )}
           </PopoverContent>

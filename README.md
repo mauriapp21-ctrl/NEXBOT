@@ -66,6 +66,16 @@ Notas del motor real:
 - Condiciones, ciclos y "Leer Excel" todavía no se ejecutan en el motor real: se marcan como omitidos con advertencia.
 - El motor escucha solo en `127.0.0.1` y acepta peticiones únicamente desde la app.
 
+### Usar el motor real desde otra dirección (túnel), con inicio de sesión
+
+Configuración provisional para pruebas: el motor sigue escuchando solo en `127.0.0.1`. El servidor de la app (`/api/engine`) le reenvía las peticiones únicamente cuando hay una sesión iniciada.
+
+1. Copia `.env.example` a `.env.local` y define `ENGINE_LOGIN_USER`, `ENGINE_LOGIN_PASSWORD` (12 caracteres o más) y `SESSION_SECRET`. Sin esos valores, el acceso remoto queda desactivado.
+2. `pnpm build && pnpm start` y, en otra terminal, `pnpm engine`.
+3. Desde el enlace del túnel: barra lateral → indicador del motor → **Iniciar sesión** (o `/login`).
+
+Seguridad: cookie firmada `httpOnly`, `Secure` y `SameSite=Strict`, con duración de 8 horas; bloqueo de 15 minutos tras 5 intentos fallidos; protección contra peticiones desde otros sitios; y solo las rutas conocidas del motor. **Chrome se abre en el equipo servidor**: no inicies sesión en cuentas personales en ese perfil (`.engine-profile/`), porque quien tenga la sesión puede usarlas.
+
 ## Pantallas
 
 Dashboard · Mis automatizaciones · Detalle de bot · Asistente de creación · Grabador (simulado y real) · Editor visual · Detalle de ejecución en vivo · Historial de ejecuciones · Mantenimiento · Versiones · Biblioteca de acciones · Plantillas · Usuarios y permisos · Integraciones · Configuración. Además, `/dev/ui` muestra el sistema visual (tokens y componentes compartidos).

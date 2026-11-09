@@ -40,10 +40,22 @@ export function useRunAutomation() {
       if (real) {
         const engine = await useEngineStore.getState().refresh();
         if (!engine) {
-          toast.error(isRemoteAccess() ? "El motor real no está disponible desde este enlace" : "El motor real local no está en ejecución", {
-            description: `Este bot trabaja en un sitio real y necesita el motor. ${engineUnavailableHint()}`,
-            duration: 10_000,
-          });
+          const session = useEngineStore.getState().session;
+          const needsLogin = isRemoteAccess() && !!session?.configured && !session.user;
+          toast.error(
+            needsLogin
+              ? "Inicia sesión para usar el motor real"
+              : isRemoteAccess()
+                ? "El motor real no está disponible desde este enlace"
+                : "El motor real local no está en ejecución",
+            {
+              description: `Este bot trabaja en un sitio real y necesita el motor. ${engineUnavailableHint()}`,
+              duration: 10_000,
+              action: needsLogin
+                ? { label: "Iniciar sesión", onClick: () => router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`) }
+                : undefined,
+            },
+          );
           return;
         }
         if (engine.busy) {

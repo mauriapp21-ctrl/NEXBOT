@@ -24,15 +24,20 @@ const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
 /**
  * True when the app is opened from another address (e.g. a public tunnel).
- * The engine only answers the app opened on this computer, so from there it
- * always looks offline even if it is running.
+ * The engine never listens there: remote users reach it through the app's
+ * authenticated gateway (/api/engine) after signing in.
  */
 export function isRemoteAccess(): boolean {
   return typeof window !== "undefined" && !LOCAL_HOSTS.has(window.location.hostname);
 }
 
+/** Where the client talks to the engine: directly on this computer, or through the signed-in gateway. */
+export function engineBaseUrl(direct: string): string {
+  return isRemoteAccess() ? "/api/engine" : direct;
+}
+
 export const REMOTE_ACCESS_HINT =
-  "El motor real solo acepta la app abierta en este equipo. Ábrela en http://localhost:3000 para grabar o ejecutar en Chrome.";
+  "Desde este enlace el motor real requiere iniciar sesión, y el motor debe estar en ejecución en el equipo servidor.";
 
 /** Explanation for "engine not available", depending on how the app was opened. */
 export function engineUnavailableHint(): string {
