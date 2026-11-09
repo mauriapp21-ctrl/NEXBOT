@@ -5,6 +5,7 @@ import type {
   AutomationVersion,
   EngineStatus,
   Execution,
+  ExecutionEngine,
   ExecutionTrigger,
   RecordedInteraction,
   Role,
@@ -58,7 +59,7 @@ export interface ExecutionService {
   list(filter?: ExecutionFilter): Promise<Execution[]>;
   get(id: string): Promise<Execution>;
   /** Creates a running execution with all steps pending. */
-  start(automationId: string, trigger?: ExecutionTrigger): Promise<Execution>;
+  start(automationId: string, trigger?: ExecutionTrigger, engine?: ExecutionEngine): Promise<Execution>;
   /** Persists progress reported by the simulator. */
   update(id: string, patch: Partial<Omit<Execution, "id" | "automationId">>): Promise<Execution>;
   stop(id: string): Promise<Execution>;

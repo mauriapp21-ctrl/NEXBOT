@@ -6,7 +6,12 @@ Este archivo es el contexto permanente del proyecto. Léelo completo antes de cu
 
 RPA Studio (nombre de producto provisional; la carpeta del repo es `C:\NEXBOT`) es una plataforma SaaS para crear, grabar, editar, ejecutar y mantener bots que automatizan procesos en sistemas web. El usuario objetivo no programa: todo se configura visualmente.
 
-En esta etapa solo existe el **frontend**, con datos y servicios simulados. No hay backend, no hay motor de automatización y no se captura ningún navegador real. La interfaz nunca debe afirmar lo contrario: la grabación y la ejecución son simulaciones guionadas.
+La app tiene dos modos de motor, y la interfaz siempre debe dejar claro cuál se usa:
+
+- **Simulado** (por defecto): datos y servicios mock; la grabación y la ejecución de los bots de demostración (sistemas `*.planta-demo.cl`) son simulaciones guionadas dentro del navegador. Nunca se debe afirmar que son reales.
+- **Real local** (opcional, aprobado el 08-11-2026): el motor de `engine/` (`pnpm engine`) controla el Google Chrome instalado con Playwright. Los bots cuya URL es un sitio real se graban y ejecutan de verdad. Escucha solo en `127.0.0.1:4319` y acepta peticiones solo desde la app. Las contraseñas grabadas nunca se guardan (se reemplazan por la variable secreta `{{clave_sitio}}`). Si una acción no está implementada en el motor real, se marca como omitida con advertencia; nunca se finge.
+
+No hay backend de datos: automatizaciones, ejecuciones y versiones siguen en el store mock persistido.
 
 El escenario de los datos de ejemplo es una planta procesadora de salmón (trazabilidad, producción diaria, inventario, reportes).
 
@@ -26,10 +31,12 @@ El escenario de los datos de ejemplo es una planta procesadora de salmón (traza
 - Tema claro/oscuro: `next-themes`. Notificaciones: `sonner` (vía shadcn). Fechas: `date-fns` con locale `es`.
 - Drag & drop de listas (reordenar pasos): `@dnd-kit/core` + `@dnd-kit/sortable`.
 - Formularios: `react-hook-form` + `zod`.
+- Motor real local: `playwright-core` con el Chrome instalado (`channel: "chrome"`, sin descargar navegadores), servidor HTTP + SSE en `engine/`, ejecutado con `tsx`. El script inyectado para grabar (`engine/inject/recorder.js`) es JavaScript plano y se carga como texto (no serializar funciones TS: `tsx` agrega helpers que no existen en la página).
 
 ## Comandos
 
 - `pnpm dev` — servidor de desarrollo.
+- `pnpm engine` — motor real local (abre Chrome visible). Archivos de entrada en `engine/files/`; perfil de Chrome en `.engine-profile/` (ignorado por git).
 - `pnpm build` — build de producción (debe pasar sin errores al cerrar cada fase).
 - `pnpm lint` — ESLint.
 - `pnpm typecheck` — `tsc --noEmit` (créalo en `package.json` si no existe).

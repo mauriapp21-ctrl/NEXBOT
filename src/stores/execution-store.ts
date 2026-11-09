@@ -3,7 +3,7 @@
 import { create } from "zustand";
 
 import { executionService } from "@/services";
-import type { Execution, ExecutionTrigger } from "@/types";
+import type { Execution, ExecutionEngine, ExecutionTrigger } from "@/types";
 
 import type { LoadStatus } from "./types";
 
@@ -12,7 +12,7 @@ interface ExecutionStore {
   status: LoadStatus;
   error?: string;
   load: (options?: { force?: boolean }) => Promise<void>;
-  start: (automationId: string, trigger?: ExecutionTrigger) => Promise<Execution>;
+  start: (automationId: string, trigger?: ExecutionTrigger, engine?: ExecutionEngine) => Promise<Execution>;
   stop: (id: string) => Promise<Execution>;
   upsert: (execution: Execution) => void;
 }
@@ -42,8 +42,8 @@ export const useExecutionStore = create<ExecutionStore>()((set, get) => {
       }
     },
 
-    async start(automationId, trigger) {
-      const execution = await executionService.start(automationId, trigger);
+    async start(automationId, trigger, engine) {
+      const execution = await executionService.start(automationId, trigger, engine);
       upsert(execution);
       return execution;
     },

@@ -7,6 +7,8 @@ import { automationService, executionService, maintenanceService } from "@/servi
 import { useExecutionStore } from "@/stores/execution-store";
 import type { Execution, ExecutionLog, ExecutionStepResult, WorkflowNode } from "@/types";
 
+import { resumeRealExecution } from "./real-runner";
+
 /**
  * In-browser execution simulator. It walks the bot's nodes with realistic
  * delays and reports progress through the ExecutionService. There is no real
@@ -42,7 +44,7 @@ export async function runExecution(executionId: string): Promise<void> {
   running.add(executionId);
   try {
     let execution = await executionService.get(executionId);
-    if (execution.status !== "running") return;
+    if (execution.status !== "running" || execution.engine === "local") return;
     const automation = await automationService.get(execution.automationId);
     const nodes = new Map(orderedSteps(automation.workflow).map((n) => [n.id, n]));
     const issues = await maintenanceService.listIssues(automation.id);
@@ -114,6 +116,8 @@ export async function runExecution(executionId: string): Promise<void> {
 /** Resumes executions left running (e.g. after a page reload). */
 export function resumeRunningExecutions(executions: Execution[]): void {
   for (const execution of executions) {
-    if (execution.status === "running") void runExecution(execution.id);
+    if (execution.status !== "running") continue;
+    if (execution.engine === "local") resumeRealExecution(execution);
+    else void runExecution(execution.id);
   }
 }

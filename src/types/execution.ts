@@ -20,6 +20,9 @@ export type ExecutionTrigger = "manual" | "scheduled" | "api";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
+/** "simulated": in-browser scripted run. "local": real Chrome via the local engine. */
+export type ExecutionEngine = "simulated" | "local";
+
 export interface ExecutionStepResult {
   nodeId: string;
   name: string;
@@ -57,4 +60,8 @@ export interface Execution {
   errorMessage?: string;
   /** Selector issue opened by this execution, if it failed on a selector. */
   selectorIssueId?: string;
+  /** Which engine ran it; absent means simulated (seed data). */
+  engine?: ExecutionEngine;
+  /** Run id in the local engine, to reconnect after a page reload. */
+  engineRunId?: string;
 }

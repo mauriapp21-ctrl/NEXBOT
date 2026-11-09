@@ -52,6 +52,8 @@ export interface ScreenSnapshot {
   values?: Record<string, string>;
   /** Banner or toast shown in the target app. */
   message?: { tone: "success" | "error" | "info"; text: string };
+  /** Real browser capture served by the local engine (real executions only). */
+  imageUrl?: string;
 }
 
 export interface Step {

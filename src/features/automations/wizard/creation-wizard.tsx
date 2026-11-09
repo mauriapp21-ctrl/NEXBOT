@@ -10,6 +10,12 @@ import { toast } from "sonner";
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ServiceError } from "@/services";
 import { useAutomationStore } from "@/stores/automation-store";
 
@@ -18,7 +24,14 @@ import { StepGeneral } from "./step-general";
 import { StepMethod } from "./step-method";
 import { StepSummary } from "./step-summary";
 import { WizardStepper } from "./wizard-stepper";
-import { traceabilityExample, wizardDefaults, wizardSchema, wizardSteps, type WizardValues } from "./wizard-schema";
+import {
+  traceabilityExample,
+  webFormExample,
+  wizardDefaults,
+  wizardSchema,
+  wizardSteps,
+  type WizardValues,
+} from "./wizard-schema";
 
 export function CreationWizard() {
   const router = useRouter();
@@ -92,10 +105,10 @@ export function CreationWizard() {
     }
   });
 
-  const fillExample = () => {
+  const fillExample = (example: WizardValues, description: string) => {
     // keepDefaultValues: the form stays "dirty" so cancelling asks for confirmation.
-    form.reset({ ...traceabilityExample }, { keepDefaultValues: true });
-    toast.info("Datos de ejemplo cargados", { description: "Caso de trazabilidad diaria de la planta." });
+    form.reset({ ...example }, { keepDefaultValues: true });
+    toast.info("Datos de ejemplo cargados", { description });
   };
 
   const cancel = () => (form.formState.isDirty ? setConfirmCancel(true) : router.push("/automations"));
@@ -106,9 +119,27 @@ export function CreationWizard() {
         title="Nueva automatización"
         description="Configura el bot en cuatro pasos. Podrás cambiar todo después."
         actions={
-          <Button type="button" variant="ghost" size="sm" onClick={fillExample}>
-            <Sparkles aria-hidden /> Usar datos de ejemplo
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="ghost" size="sm">
+                <Sparkles aria-hidden /> Usar datos de ejemplo
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              <DropdownMenuItem onSelect={() => fillExample(traceabilityExample, "Caso de trazabilidad diaria de la planta (simulado).")}>
+                <span className="grid">
+                  <span className="font-medium">Trazabilidad diaria</span>
+                  <span className="text-xs text-muted-foreground">Sistema de la planta · simulado</span>
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => fillExample(webFormExample, "Formulario público de práctica (requiere el motor real).")}>
+                <span className="grid">
+                  <span className="font-medium">Formulario web de prueba</span>
+                  <span className="text-xs text-muted-foreground">Sitio real · motor local (pnpm engine)</span>
+                </span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       />
       <WizardStepper current={step} reached={reached} onSelect={goTo} />

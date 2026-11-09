@@ -29,7 +29,7 @@ export const mockExecutionService: ExecutionService = {
     return clone(find(id));
   },
 
-  async start(automationId, trigger = "manual") {
+  async start(automationId, trigger = "manual", engine = "simulated") {
     await simulateLatency();
     const automation =
       getDb().automations.find((a) => a.id === automationId) ?? notFound("Automatización", automationId);
@@ -44,6 +44,7 @@ export const mockExecutionService: ExecutionService = {
       versionNumber: automation.currentVersion,
       status: "running",
       trigger,
+      engine,
       triggeredById: CURRENT_USER_ID,
       startedAt: now,
       steps: orderedSteps(automation.workflow).map((node) => ({

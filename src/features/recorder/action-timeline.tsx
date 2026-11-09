@@ -23,9 +23,22 @@ import { EditInteractionDialog } from "./edit-interaction-dialog";
 import { TimelineItem } from "./timeline-item";
 import type { RecorderController } from "./use-recorder";
 
+/** What the timeline needs from a recorder (simulated or real). */
+export type TimelineController = Pick<
+  RecorderController,
+  "interactions" | "status" | "playing" | "moveInteraction" | "updateInteraction" | "removeInteraction"
+>;
+
 const position = (list: RecordedInteraction[], id: unknown) => list.findIndex((i) => i.id === id) + 1;
 
-export function ActionTimeline({ recorder }: { recorder: RecorderController }) {
+export function ActionTimeline({
+  recorder,
+  mode = "simulated",
+}: {
+  recorder: TimelineController;
+  /** Where interactions happen, for the empty-state copy. */
+  mode?: "simulated" | "real";
+}) {
   const { interactions, status, playing } = recorder;
   const [editing, setEditing] = useState<RecordedInteraction | null>(null);
   const [deleting, setDeleting] = useState<RecordedInteraction | null>(null);
@@ -72,8 +85,12 @@ export function ActionTimeline({ recorder }: { recorder: RecorderController }) {
           title={status === "idle" ? "Aún no hay pasos" : "Esperando interacciones"}
           description={
             status === "idle"
-              ? "Inicia la grabación y trabaja en el navegador simulado: cada clic, texto o archivo se registrará aquí."
-              : "Haz clic, escribe o selecciona un archivo dentro del navegador."
+              ? mode === "real"
+                ? "Inicia la grabación y trabaja en la ventana de Google Chrome: cada clic, texto o archivo se registrará aquí."
+                : "Inicia la grabación y trabaja en el navegador simulado: cada clic, texto o archivo se registrará aquí."
+              : mode === "real"
+                ? "Haz clic, escribe o selecciona un archivo en la ventana de Google Chrome."
+                : "Haz clic, escribe o selecciona un archivo dentro del navegador."
           }
           className="flex-1"
         />

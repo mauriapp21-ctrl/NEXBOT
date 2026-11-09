@@ -13,8 +13,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { recorderService } from "@/services";
 import { useAutomationStore } from "@/stores/automation-store";
 
+import { isRealTarget } from "@/lib/engine-mode";
+
 import { ActionTimeline } from "./action-timeline";
 import { BrowserSimulator } from "./browser-simulator";
+import { RealRecorderView } from "./real/real-recorder-view";
 import { RecorderToolbar } from "./recorder-toolbar";
 import { TARGET_ORIGIN } from "./target-app/target-model";
 import { useRecorder } from "./use-recorder";
@@ -50,6 +53,8 @@ export function RecorderView({ id }: { id: string }) {
       />
     );
   }
+
+  if (isRealTarget(automation)) return <RealRecorderView automation={automation} />;
 
   const existingSteps = automation.workflow.nodes.length;
 

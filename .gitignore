@@ -47,3 +47,8 @@ next-env.d.ts
 
 # independent Remotion repo (advertising video)
 /video-automation-anywhere/
+
+# local engine (real browser profile and input/output files)
+/.engine-profile/
+/engine/files/*
+!/engine/files/Documento_Prueba.txt

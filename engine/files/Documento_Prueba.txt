@@ -1,0 +1,2 @@
+Documento de prueba para RPA Studio.
+Este archivo lo usa el motor real local cuando un bot sube un archivo.

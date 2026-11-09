@@ -4,13 +4,20 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { toast } from "sonner";
 
+import { ENGINE_START_HINT, isRealTarget } from "@/lib/engine-mode";
 import { useAutomationStore } from "@/stores/automation-store";
+import { useEngineStore } from "@/stores/engine-store";
 import { useExecutionStore } from "@/stores/execution-store";
 import type { Automation } from "@/types";
 
+import { runRealExecution } from "./real-runner";
 import { runExecution } from "./simulator";
 
-/** Starts a simulated execution of a bot and reports it with a toast. */
+/**
+ * Starts an execution of a bot. Bots that target the built-in simulated system
+ * run in the simulator; bots that target real websites run in Chrome through
+ * the local engine.
+ */
 export function useRunAutomation() {
   const router = useRouter();
   const start = useExecutionStore((s) => s.start);
@@ -28,16 +35,37 @@ export function useRunAutomation() {
         });
         return;
       }
+
+      const real = isRealTarget(automation);
+      if (real) {
+        const engine = await useEngineStore.getState().refresh();
+        if (!engine) {
+          toast.error("El motor real local no está en ejecución", {
+            description: `Este bot trabaja en un sitio real y necesita el motor. ${ENGINE_START_HINT}`,
+            duration: 10_000,
+          });
+          return;
+        }
+        if (engine.busy) {
+          toast.warning("El motor está ocupado", { description: "Espera a que termine la ejecución o grabación en curso." });
+          return;
+        }
+      }
+
       try {
-        const execution = await start(automation.id, "manual");
+        const execution = await start(automation.id, "manual", real ? "local" : "simulated");
         useAutomationStore.getState().upsert({ ...automation, lastRunAt: execution.startedAt });
-        void runExecution(execution.id);
         const href = `/executions/${execution.id}`;
+        if (real) {
+          await runRealExecution(execution, automation);
+        } else {
+          void runExecution(execution.id);
+        }
         if (options.navigate) {
           router.push(href);
         } else {
           toast.success(`Ejecutando "${automation.name}"`, {
-            description: "Ejecución simulada en curso.",
+            description: real ? "Ejecución real en Google Chrome (motor local)." : "Ejecución simulada en curso.",
             action: { label: "Ver progreso", onClick: () => router.push(href) },
           });
         }

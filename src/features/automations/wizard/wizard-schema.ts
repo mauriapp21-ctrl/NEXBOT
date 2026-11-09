@@ -121,3 +121,18 @@ export const wizardSteps = [
   },
   { id: "summary", title: "Resumen", description: "Revisa y crea el bot.", fields: [] },
 ] as const satisfies readonly { id: string; title: string; description: string; fields: readonly (keyof WizardValues)[] }[];
+
+/** Real-website example for the local engine (public Selenium practice form). */
+export const webFormExample: WizardValues = {
+  name: "Formulario web de prueba",
+  description:
+    "Completa el formulario público de práctica de Selenium, adjunta un documento, lo envía y valida la confirmación. Sirve para probar el motor real.",
+  category: "quality",
+  targetSystem: "Formulario de práctica (Selenium)",
+  manualDurationMinutes: 5,
+  method: "record",
+  browser: "chrome",
+  targetUrl: "https://www.selenium.dev/selenium/web/web-form.html",
+  variables: [],
+  inputFiles: [{ id: "fil_doc", name: "Documento_Prueba", extension: ".txt", required: true }],
+};
