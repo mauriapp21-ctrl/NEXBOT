@@ -46,7 +46,7 @@ export function ActionLibrary({ onAdd }: { onAdd: (type: ActionType) => void }) 
       {groups.length === 0 ? (
         <EmptyState variant="compact" icon={SearchX} title="Sin resultados" description="Prueba con otro término." />
       ) : (
-        <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
+        <ScrollArea type="auto" className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
           <div className="space-y-4 p-3">
             {groups.map(({ category, actions }) => (
               <section key={category} aria-labelledby={`cat-${category}`}>

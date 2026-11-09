@@ -15,7 +15,7 @@ export function NodePropertiesPanel({ automation, onDeleteNode }: { automation: 
       <div className="border-b p-3">
         <h2 className="text-sm font-semibold">{node ? "Propiedades del paso" : "Propiedades del bot"}</h2>
       </div>
-      <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
+      <ScrollArea type="auto" className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
         <div className="p-3">
           {node ? (
             <StepForm key={node.id} node={node} automation={automation} onDelete={() => onDeleteNode(node.id)} />

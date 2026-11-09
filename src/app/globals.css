@@ -227,3 +227,20 @@
   outline: 2px dashed var(--teal);
   outline-offset: 2px;
 }
+
+/*
+ * Scrollbars: always visible and consistent across the app, so every
+ * scrollable area is discoverable (thin, themed with the tokens).
+ */
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 45%, transparent) transparent;
+  }
+  [data-slot="sidebar-content"] {
+    scrollbar-color: var(--sidebar-border) transparent;
+  }
+}

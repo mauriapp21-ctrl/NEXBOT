@@ -95,7 +95,7 @@ export function ActionTimeline({
           className="flex-1"
         />
       ) : (
-        <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
+        <ScrollArea type="auto" className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:!block">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}

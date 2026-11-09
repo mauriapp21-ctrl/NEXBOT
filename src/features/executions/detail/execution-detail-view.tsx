@@ -108,7 +108,7 @@ export function ExecutionDetailView({ id }: { id: string }) {
       )}
 
       <div className="grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
-        <div className="lg:max-h-[calc(100svh-17rem)] lg:min-h-[420px] [&>section]:h-full">
+        <div className="max-h-[480px] lg:h-[calc(100svh-17rem)] lg:max-h-none lg:min-h-[420px] [&>section]:h-full [&>section]:max-h-[inherit]">
           <StepList steps={execution.steps} selected={selected} onSelect={setPicked} />
         </div>
         <div className="min-w-0 space-y-4">

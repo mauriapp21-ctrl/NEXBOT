@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -72,7 +71,7 @@ export function NotificationsMenu() {
         ) : notifications.length === 0 ? (
           <EmptyState variant="compact" icon={Bell} title="Sin notificaciones" description="Aquí verás fallos y avisos de mantenimiento." />
         ) : (
-          <ScrollArea className="max-h-96">
+          <div className="max-h-[min(24rem,60svh)] overflow-y-auto overscroll-contain">
             <ul className="divide-y">
               {notifications.map((n) => {
                 const { icon: Icon, className } = kindIcon[n.kind];
@@ -102,7 +101,7 @@ export function NotificationsMenu() {
                 );
               })}
             </ul>
-          </ScrollArea>
+          </div>
         )}
       </PopoverContent>
     </Popover>
