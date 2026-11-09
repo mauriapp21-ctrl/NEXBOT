@@ -5,6 +5,7 @@ import type { Step } from "../src/types/workflow";
 import { openBrowser, type BrowserSession } from "./browser";
 import { EventChannel } from "./events";
 import { runStep, StepError } from "./run-step";
+import { keepLatest } from "./validation";
 
 export type RunEvent =
   | { type: "step"; index: number; status: "running" | "completed" | "warning" | "skipped" | "error"; message?: string; durationMs?: number; screenshot?: string }
@@ -41,6 +42,7 @@ export function startRun(
 ): Run {
   const run: Run = { id: randomUUID(), channel: new EventChannel(), screenshots: new Map(), stopped: false };
   runs.set(run.id, run);
+  keepLatest(runs, 20); // screenshots live in memory: keep only recent runs
   void execute(run, steps, { ...variables }, options.startUrl).finally(() => options.onFinish?.());
   return run;
 }

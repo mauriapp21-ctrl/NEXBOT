@@ -14,6 +14,43 @@ interface MockDbState extends DemoData {
   seededAt: string | null;
 }
 
+/**
+ * localStorage that never throws: blocked storage (private mode) or a full
+ * quota must not crash the app. On a quota error the oldest executions are
+ * dropped and the write is retried once.
+ */
+const safeLocalStorage = {
+  getItem(name: string): string | null {
+    try {
+      return localStorage.getItem(name);
+    } catch {
+      return null;
+    }
+  },
+  setItem(name: string, value: string): void {
+    try {
+      localStorage.setItem(name, value);
+    } catch {
+      try {
+        const parsed = JSON.parse(value) as { state?: { executions?: unknown[] } };
+        if (parsed.state && Array.isArray(parsed.state.executions)) {
+          parsed.state.executions = parsed.state.executions.slice(0, 50);
+          localStorage.setItem(name, JSON.stringify(parsed));
+        }
+      } catch {
+        // Storage unavailable: the demo keeps working in memory for this session.
+      }
+    }
+  },
+  removeItem(name: string): void {
+    try {
+      localStorage.removeItem(name);
+    } catch {
+      // Nothing to clean up when storage is unavailable.
+    }
+  },
+};
+
 const empty: MockDbState = {
   seededAt: null,
   automations: [],
@@ -32,9 +69,24 @@ export const useMockDb = create<MockDbState>()(
   persist(() => empty, {
     name: "rpa-studio-db",
     version: 1,
-    storage: createJSONStorage(() => localStorage),
+    storage: createJSONStorage(() => safeLocalStorage),
   }),
 );
+
+/** Max executions kept in the browser (newest first) so storage never fills up. */
+const MAX_EXECUTIONS = 300;
+
+const LIST_KEYS = ["automations", "executions", "versions", "selectorIssues", "users", "roles", "notifications"] as const;
+
+/** Data edited by hand or corrupted in localStorage is detected instead of crashing screens. */
+function isValidDb(state: MockDbState): boolean {
+  if (typeof state.seededAt !== "string" || Number.isNaN(new Date(state.seededAt).getTime())) return false;
+  return LIST_KEYS.every(
+    (key) =>
+      Array.isArray(state[key]) &&
+      (state[key] as unknown[]).every((item) => typeof item === "object" && item !== null && "id" in item),
+  );
+}
 
 const DAY_MS = 86_400_000;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
@@ -60,6 +112,11 @@ function shiftDates<T>(value: T, ms: number): T {
  */
 export function getDb(): MockDbState {
   let state = useMockDb.getState();
+  if (state.seededAt !== null && !isValidDb(state)) {
+    console.warn("[rpa-studio] Los datos guardados estaban dañados; se restablecieron los datos de demo.");
+    resetDb();
+    state = useMockDb.getState();
+  }
   // Data saved before a field existed is completed with its default.
   if (state.seededAt && (!state.targetDesign || !state.settings || !state.integrations)) {
     useMockDb.setState({
@@ -91,7 +148,11 @@ export function getDb(): MockDbState {
 
 export function updateDb(updater: (state: MockDbState) => Partial<MockDbState>): void {
   const current = getDb();
-  useMockDb.setState(updater(current));
+  const next = updater(current);
+  if (next.executions && next.executions.length > MAX_EXECUTIONS) {
+    next.executions = next.executions.slice(0, MAX_EXECUTIONS);
+  }
+  useMockDb.setState(next);
 }
 
 export function resetDb(): void {

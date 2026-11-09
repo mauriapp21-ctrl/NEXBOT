@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { openBrowser, type BrowserSession } from "./browser";
 import { EventChannel } from "./events";
+import { keepLatest } from "./validation";
 
 export interface RecordedEvent {
   type: "interaction";
@@ -33,6 +34,7 @@ const recorderScript = fs.readFileSync(path.resolve(process.cwd(), "engine", "in
 export async function startRecording(url: string): Promise<Recording> {
   const recording: Recording = { id: randomUUID(), channel: new EventChannel() };
   recordings.set(recording.id, recording);
+  keepLatest(recordings, 20);
   const session = await openBrowser();
   recording.session = session;
   const { context, page } = session;

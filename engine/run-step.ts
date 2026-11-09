@@ -5,6 +5,8 @@ import type { Locator, Page } from "playwright-core";
 
 import type { Step } from "../src/types/workflow";
 
+import { assertWebUrl } from "./validation";
+
 /** Folder where bots read their input files from (e.g. planillas). */
 export const FILES_DIR = path.resolve(process.cwd(), "engine", "files");
 
@@ -35,7 +37,8 @@ export async function runStep(page: Page, step: Step, vars: Record<string, strin
     case "open_browser":
       return { status: "completed", message: "Navegador abierto." };
     case "navigate":
-      await page.goto(resolveText(p.url, vars), { timeout, waitUntil: "domcontentloaded" });
+      // Re-checked after variables are resolved: only web pages, never file:// or chrome://.
+      await page.goto(assertWebUrl(resolveText(p.url, vars)), { timeout, waitUntil: "domcontentloaded" });
       return { status: "completed" };
     case "go_back":
       await page.goBack({ timeout });
@@ -44,7 +47,7 @@ export async function runStep(page: Page, step: Step, vars: Record<string, strin
       await page.reload({ timeout });
       return { status: "completed" };
     case "wait":
-      await page.waitForTimeout(Number(p.seconds ?? 1) * 1000);
+      await page.waitForTimeout(Math.min(300, Math.max(0, Number(p.seconds ?? 1) || 0)) * 1000);
       return { status: "completed" };
     case "click":
       await locate(page, step).click({ timeout });
@@ -101,9 +104,10 @@ export async function runStep(page: Page, step: Step, vars: Record<string, strin
       const [download] = await Promise.all([page.waitForEvent("download", { timeout }), locate(page, step).click({ timeout })]);
       const folder = path.join(FILES_DIR, "descargas");
       fs.mkdirSync(folder, { recursive: true });
-      const target = path.join(folder, download.suggestedFilename());
-      await download.saveAs(target);
-      return { status: "completed", message: `Archivo guardado en engine/files/descargas/${download.suggestedFilename()}.` };
+      // The website chooses the name: keep only a safe base name inside the downloads folder.
+      const safeName = path.basename(download.suggestedFilename()).replace(/[<>:"/\\|?*\x00-\x1f]/g, "_").slice(0, 150) || "descarga";
+      await download.saveAs(path.join(folder, safeName));
+      return { status: "completed", message: `Archivo guardado en engine/files/descargas/${safeName}.` };
     }
     case "end":
       return { status: "completed" };
@@ -112,5 +116,7 @@ export async function runStep(page: Page, step: Step, vars: Record<string, strin
     case "loop":
       // Not implemented by the real engine yet: reported honestly, never faked.
       return { status: "skipped", message: "Esta acción aún no está disponible en el motor real; se omitió." };
+    default:
+      throw new StepError(`Acción desconocida: ${String((step as { type?: unknown }).type)}.`);
   }
 }
