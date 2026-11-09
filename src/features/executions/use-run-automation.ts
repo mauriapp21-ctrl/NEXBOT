@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { toast } from "sonner";
 
-import { ENGINE_START_HINT, isRealTarget } from "@/lib/engine-mode";
+import { engineUnavailableHint, isRealTarget, isRemoteAccess } from "@/lib/engine-mode";
 import { useAutomationStore } from "@/stores/automation-store";
 import { useEngineStore } from "@/stores/engine-store";
 import { useExecutionStore } from "@/stores/execution-store";
@@ -40,8 +40,8 @@ export function useRunAutomation() {
       if (real) {
         const engine = await useEngineStore.getState().refresh();
         if (!engine) {
-          toast.error("El motor real local no está en ejecución", {
-            description: `Este bot trabaja en un sitio real y necesita el motor. ${ENGINE_START_HINT}`,
+          toast.error(isRemoteAccess() ? "El motor real no está disponible desde este enlace" : "El motor real local no está en ejecución", {
+            description: `Este bot trabaja en un sitio real y necesita el motor. ${engineUnavailableHint()}`,
             duration: 10_000,
           });
           return;

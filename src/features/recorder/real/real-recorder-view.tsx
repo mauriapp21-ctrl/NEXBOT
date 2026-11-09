@@ -2,11 +2,12 @@
 
 import { Circle, Globe, Loader2, MonitorPlay, RotateCw, Save, Square, TerminalSquare, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { Button } from "@/components/ui/button";
+import { isRemoteAccess } from "@/lib/engine-mode";
 import { formatClock } from "@/lib/format";
 import { createId } from "@/lib/random";
 import { recorderService } from "@/services";
@@ -18,6 +19,8 @@ import { ActionTimeline } from "../action-timeline";
 import { SECRET_VARIABLE } from "./real-recording";
 import { useRealRecorder } from "./use-real-recorder";
 
+const noopSubscribe = () => () => {};
+
 export function RealRecorderView({ automation }: { automation: Automation }) {
   const router = useRouter();
   const engine = useEngineStore((s) => s.local);
@@ -28,6 +31,7 @@ export function RealRecorderView({ automation }: { automation: Automation }) {
   const [saving, setSaving] = useState(false);
   const [confirmReplace, setConfirmReplace] = useState(false);
   const { status, interactions } = recorder;
+  const remote = useSyncExternalStore(noopSubscribe, isRemoteAccess, () => false);
   const existingSteps = automation.workflow.nodes.length;
 
   const save = async () => {
@@ -126,13 +130,17 @@ export function RealRecorderView({ automation }: { automation: Automation }) {
             <>
               <TerminalSquare className="size-8 text-muted-foreground" aria-hidden />
               <div className="max-w-md space-y-1">
-                <p className="font-medium">El motor real local no está en ejecución</p>
+                <p className="font-medium">
+                  {remote ? "El motor real no está disponible desde este enlace" : "El motor real local no está en ejecución"}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  Este bot trabaja en un sitio web real ({automation.targetUrl}). Para grabarlo, abre una terminal en la
-                  carpeta del proyecto y ejecuta:
+                  Este bot trabaja en un sitio web real ({automation.targetUrl}).{" "}
+                  {remote
+                    ? "Por seguridad, el motor solo acepta la app abierta en el mismo equipo donde corre. Ábrela en:"
+                    : "Para grabarlo, abre una terminal en la carpeta del proyecto y ejecuta:"}
                 </p>
               </div>
-              <code className="rounded-md bg-muted px-3 py-1.5 font-mono text-sm">pnpm engine</code>
+              <code className="rounded-md bg-muted px-3 py-1.5 font-mono text-sm">{remote ? "http://localhost:3000" : "pnpm engine"}</code>
               <Button variant="outline" onClick={() => void refreshEngine()}>
                 <RotateCw aria-hidden /> Volver a verificar
               </Button>

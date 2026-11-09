@@ -1,14 +1,16 @@
 "use client";
 
 import { MonitorPlay, Server, TerminalSquare } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { isRemoteAccess } from "@/lib/engine-mode";
 import { cn } from "@/lib/utils";
 import { useEngineStore } from "@/stores/engine-store";
 
 const POLL_MS = 8_000;
+const noopSubscribe = () => () => {};
 
 /**
  * Engine indicator. "Real" when the local engine (pnpm engine) is running:
@@ -18,6 +20,7 @@ const POLL_MS = 8_000;
 export function EngineStatusIndicator() {
   const local = useEngineStore((s) => s.local);
   const checked = useEngineStore((s) => s.checked);
+  const remote = useSyncExternalStore(noopSubscribe, isRemoteAccess, () => false);
 
   useEffect(() => {
     const refresh = () => void useEngineStore.getState().refresh();
@@ -86,11 +89,13 @@ export function EngineStatusIndicator() {
                   <p className="text-sm font-medium">Motor simulado</p>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  La grabación y la ejecución son simulaciones guionadas dentro del navegador. Para trabajar con sitios
-                  web reales, inicia el motor local:
+                  La grabación y la ejecución son simulaciones guionadas dentro del navegador.{" "}
+                  {remote
+                    ? "Abriste la app desde otra dirección: el motor real solo acepta la app abierta en el equipo donde corre."
+                    : "Para trabajar con sitios web reales, inicia el motor local:"}
                 </p>
                 <p className="flex items-center gap-2 rounded-md bg-muted px-2 py-1.5 font-mono text-xs">
-                  <TerminalSquare className="size-3.5 shrink-0" aria-hidden /> pnpm engine
+                  <TerminalSquare className="size-3.5 shrink-0" aria-hidden /> {remote ? "http://localhost:3000" : "pnpm engine"}
                 </p>
               </div>
             )}
