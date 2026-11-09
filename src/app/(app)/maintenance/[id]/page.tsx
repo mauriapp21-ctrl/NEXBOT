@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { MaintenanceView } from "@/features/maintenance/maintenance-view";
 
 export const metadata: Metadata = { title: "Mantenimiento" };
 
-export default function MantenimientoPage() {
-  return (
-    <PhasePlaceholder
-      title="Mantenimiento"
-      description="Compara selectores y repara los pasos afectados."
-      phase={6}
-    />
-  );
+export default async function MaintenancePage({ params }: PageProps<"/maintenance/[id]">) {
+  const { id } = await params;
+  return <MaintenanceView id={id} />;
 }

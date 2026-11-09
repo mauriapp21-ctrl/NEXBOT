@@ -98,6 +98,16 @@ export function useRecorder() {
     perform({ type: "navigate", url: `${TARGET_ORIGIN}/login` });
   };
 
+  /** Starts recording from a given screen (re-recording a single step). */
+  const startAt = (state: TargetState) => {
+    resetAll();
+    targetRef.current = state;
+    setTarget(state);
+    setHistory({ urls: [state.url], index: 0 });
+    statusRef.current = "recording";
+    setStatus("recording");
+  };
+
   const goHistory = (delta: -1 | 1) => {
     const index = history.index + delta;
     const url = history.urls[index];
@@ -135,6 +145,7 @@ export function useRecorder() {
     canGoBack: history.index > 0,
     canGoForward: history.index < history.urls.length - 1,
     start,
+    startAt,
     playSample,
     pause: () => setStatus("paused"),
     resume: () => setStatus("recording"),

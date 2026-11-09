@@ -2,7 +2,7 @@
 
 import { Bot, Info, Monitor } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -11,16 +11,17 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { recorderService } from "@/services";
-import { useAutomationStore } from "@/stores/automation-store";
-
 import { isRealTarget } from "@/lib/engine-mode";
+import { useAutomationStore } from "@/stores/automation-store";
 
 import { ActionTimeline } from "./action-timeline";
 import { BrowserSimulator } from "./browser-simulator";
 import { RealRecorderView } from "./real/real-recorder-view";
 import { RecorderToolbar } from "./recorder-toolbar";
+import { StepRerecordBanner } from "./step-rerecord-banner";
 import { TARGET_ORIGIN } from "./target-app/target-model";
 import { useRecorder } from "./use-recorder";
+import { useStepRerecord } from "./use-step-rerecord";
 
 export function RecorderView({ id }: { id: string }) {
   const router = useRouter();
@@ -28,6 +29,7 @@ export function RecorderView({ id }: { id: string }) {
   const ready = useAutomationStore((s) => s.status === "ready");
   const upsert = useAutomationStore((s) => s.upsert);
   const recorder = useRecorder();
+  const rerecord = useStepRerecord(automation, useSearchParams().get("paso"), recorder);
   const [saving, setSaving] = useState(false);
   const [confirmReplace, setConfirmReplace] = useState(false);
 
@@ -82,12 +84,23 @@ export function RecorderView({ id }: { id: string }) {
         El grabador se usa mejor en una pantalla de escritorio.
       </div>
 
-      <RecorderToolbar
-        name={automation.name}
-        recorder={recorder}
-        saving={saving}
-        onSave={() => (existingSteps > 0 ? setConfirmReplace(true) : void save())}
-      />
+      {rerecord.active ? (
+        <StepRerecordBanner
+          stepNumber={rerecord.stepNumber}
+          stepName={rerecord.node?.name ?? ""}
+          automationId={automation.id}
+          status={recorder.status}
+          saving={rerecord.saving}
+          onBegin={() => void rerecord.begin()}
+        />
+      ) : (
+        <RecorderToolbar
+          name={automation.name}
+          recorder={recorder}
+          saving={saving}
+          onSave={() => (existingSteps > 0 ? setConfirmReplace(true) : void save())}
+        />
+      )}
 
       <p className="flex items-start gap-2 text-xs text-muted-foreground">
         <Info className="mt-px size-3.5 shrink-0" aria-hidden />

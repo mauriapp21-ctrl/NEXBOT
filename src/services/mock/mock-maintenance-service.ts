@@ -86,7 +86,16 @@ export const mockMaintenanceService: MaintenanceService = {
       workflow: {
         ...automation.workflow,
         nodes: automation.workflow.nodes.map((n) =>
-          n.id === issue.nodeId ? { ...n, selector: selector.trim(), elementLabel: issue.detectedLabel, needsMaintenance: undefined } : n,
+          n.id === issue.nodeId
+            ? {
+                ...n,
+                // Auto-generated names mention the old label ("Clic en Importar información").
+                name: n.name.replace(issue.previousLabel, issue.detectedLabel),
+                selector: selector.trim(),
+                elementLabel: issue.detectedLabel,
+                needsMaintenance: undefined,
+              }
+            : n,
         ),
       },
     };

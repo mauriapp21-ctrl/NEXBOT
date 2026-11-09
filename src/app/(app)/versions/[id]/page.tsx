@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { VersionsView } from "@/features/versions/versions-view";
 
 export const metadata: Metadata = { title: "Versiones" };
 
-export default function VersionesPage() {
-  return (
-    <PhasePlaceholder
-      title="Versiones"
-      description="Línea de tiempo, comparación y restauración."
-      phase={6}
-    />
-  );
+export default async function VersionsPage({ params }: PageProps<"/versions/[id]">) {
+  const { id } = await params;
+  return <VersionsView id={id} />;
 }

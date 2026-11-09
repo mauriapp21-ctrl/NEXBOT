@@ -14,12 +14,20 @@ interface PublishDialogProps {
   nextVersion: number;
   hasUnsavedChanges: boolean;
   onPublish: (notes: string) => Promise<void>;
+  /** Suggested change notes, filled in each time the dialog opens. */
+  defaultNotes?: string;
 }
 
-export function PublishDialog({ open, onOpenChange, nextVersion, hasUnsavedChanges, onPublish }: PublishDialogProps) {
+export function PublishDialog({ open, onOpenChange, nextVersion, hasUnsavedChanges, onPublish, defaultNotes }: PublishDialogProps) {
   const [notes, setNotes] = useState("");
+  const [wasOpen, setWasOpen] = useState(open);
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
+  // Pre-fill the suggestion when the dialog opens (state reset during render).
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open && defaultNotes && !notes) setNotes(defaultNotes);
+  }
   const error = notes.trim().length < 5 ? "Describe los cambios en al menos 5 caracteres." : undefined;
 
   const submit = async (event: React.FormEvent) => {
