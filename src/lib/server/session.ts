@@ -30,8 +30,9 @@ const sign = (payload: string) => createHmac("sha256", SECRET).update(payload).d
 /** Constant-time comparison so response times do not reveal the credentials. */
 export function checkCredentials(user: string, password: string): boolean {
   if (!loginConfigured()) return false;
-  const userOk = timingSafeEqual(digest(user), digest(USER));
-  const passwordOk = timingSafeEqual(digest(password), digest(PASSWORD));
+  // Phones often capitalize the first letter or add a space when pasting.
+  const userOk = timingSafeEqual(digest(user.trim().toLowerCase()), digest(USER.trim().toLowerCase()));
+  const passwordOk = timingSafeEqual(digest(password.trim()), digest(PASSWORD.trim()));
   return userOk && passwordOk;
 }
 
@@ -51,7 +52,7 @@ export function readSessionToken(token: string | undefined): string | null {
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { u?: unknown; exp?: unknown };
     if (typeof data.u !== "string" || typeof data.exp !== "number" || data.exp < Date.now() / 1000) return null;
-    return data.u === USER ? data.u : null;
+    return data.u === USER.trim().toLowerCase() ? data.u : null;
   } catch {
     return null;
   }

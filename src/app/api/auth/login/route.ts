@@ -39,13 +39,17 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success || !checkCredentials(parsed.data.user, parsed.data.password)) {
     registerFailure(key);
+    // Never log the password; the user name helps spot typos or capitalization issues.
+    console.warn(`[auth] inicio de sesión fallido desde ${key} (usuario "${parsed.success ? parsed.data.user.slice(0, 40) : "?"}")`);
     // Small fixed delay slows down automated guessing.
     await new Promise((resolve) => setTimeout(resolve, 600));
     return NextResponse.json({ error: "Usuario o contraseña incorrectos." }, { status: 401 });
   }
 
   clearFailures(key);
-  const response = NextResponse.json({ user: parsed.data.user });
-  response.cookies.set(SESSION_COOKIE, createSessionToken(parsed.data.user), sessionCookieOptions(request));
+  const user = parsed.data.user.trim().toLowerCase();
+  console.info(`[auth] sesión iniciada por "${user}" desde ${key}`);
+  const response = NextResponse.json({ user });
+  response.cookies.set(SESSION_COOKIE, createSessionToken(user), sessionCookieOptions(request));
   return response;
 }

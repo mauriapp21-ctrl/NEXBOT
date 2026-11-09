@@ -52,7 +52,16 @@ export function LoginForm() {
       <FieldGroup>
         <Field data-invalid={!!errors.user}>
           <FieldLabel htmlFor="user">Usuario</FieldLabel>
-          <Input id="user" autoComplete="username" autoFocus aria-invalid={!!errors.user} {...register("user")} />
+          <Input
+            id="user"
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoFocus
+            aria-invalid={!!errors.user}
+            {...register("user")}
+          />
           <FieldError errors={[errors.user]} />
         </Field>
         <Field data-invalid={!!errors.password}>
@@ -61,6 +70,9 @@ export function LoginForm() {
             id="password"
             type="password"
             autoComplete="current-password"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             aria-invalid={!!errors.password}
             {...register("password")}
           />
