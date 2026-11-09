@@ -37,7 +37,13 @@ export async function startRecording(url: string): Promise<Recording> {
   recording.session = session;
   const { context, page } = session;
 
+  // Time of the last recorded action; navigations shortly after an action are
+  // its consequence (link, submit, redirect) and are not recorded as steps.
+  let lastActionAt = Date.now();
+  let lastNavigatedUrl = url;
+
   await context.exposeBinding("__rpaRecord", ({ page: source }, payload: Omit<RecordedEvent, "type" | "url" | "timestamp">) => {
+    lastActionAt = Date.now();
     recording.channel.publish({ type: "interaction", ...payload, url: source.url(), timestamp: new Date().toISOString() });
   });
   await context.addInitScript({ content: recorderScript });
@@ -45,6 +51,19 @@ export async function startRecording(url: string): Promise<Recording> {
   // The opening of the start page is the first recorded step.
   recording.channel.publish({ type: "interaction", kind: "navigate", value: url, url, timestamp: new Date().toISOString() });
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  lastActionAt = Date.now();
+
+  // Navigations the user starts (typing an address, bookmarks, back/forward)
+  // become "Ir a URL" steps, so the bot replays them.
+  page.on("framenavigated", (frame) => {
+    if (frame !== page.mainFrame()) return;
+    const current = frame.url();
+    if (!/^https?:/.test(current) || current === lastNavigatedUrl) return;
+    lastNavigatedUrl = current;
+    if (Date.now() - lastActionAt < 2500) return;
+    lastActionAt = Date.now();
+    recording.channel.publish({ type: "interaction", kind: "navigate", value: current, url: current, timestamp: new Date().toISOString() });
+  });
 
   context.on("close", () => {
     recording.channel.publish({ type: "closed", reason: "Se cerró la ventana del navegador." });

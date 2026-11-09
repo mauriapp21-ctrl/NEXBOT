@@ -115,8 +115,24 @@
       const raw = event.target;
       if (!raw || !(raw instanceof Element)) return;
       if (isTextField(raw) || raw instanceof HTMLSelectElement || (raw instanceof HTMLInputElement && raw.type === "file")) return;
-      const target =
-        raw.closest("button, a[href], [role=button], [role=link], [role=tab], [role=menuitem], input[type=submit], input[type=button], input[type=checkbox], input[type=radio], label, summary") ?? raw;
+      let target = raw.closest(
+        "button, a[href], [role=button], [role=link], [role=tab], [role=menuitem], [role=option], [role=checkbox], [role=radio], input[type=submit], input[type=button], input[type=checkbox], input[type=radio], label, summary",
+      );
+      if (target instanceof HTMLLabelElement) {
+        const control = target.control;
+        // A label of a text field, select or file input only moves the focus;
+        // what the user types/selects is recorded on the control itself.
+        if (!control || isTextField(control) || control instanceof HTMLSelectElement || (control instanceof HTMLInputElement && control.type === "file")) return;
+        // Checkbox/radio labels: record the click on the control (more stable selector).
+        target = control;
+      }
+      if (!target) {
+        // Generic elements count only when they look clickable (cursor: pointer);
+        // clicks on empty areas, text or the page background are ignored.
+        if (raw === document.documentElement || raw === document.body) return;
+        if (getComputedStyle(raw).cursor !== "pointer") return;
+        target = raw;
+      }
       send({ kind: "click", selector: selectorFor(target), label: labelFor(target) });
     },
     true,

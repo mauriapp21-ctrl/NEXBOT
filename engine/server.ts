@@ -104,6 +104,13 @@ const server = http.createServer(async (req, res) => {
 });
 
 fs.mkdirSync(FILES_DIR, { recursive: true });
+server.on("error", (error: NodeJS.ErrnoException) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`El puerto ${PORT} ya está en uso: probablemente el motor ya está corriendo en otra terminal.`);
+    process.exit(1);
+  }
+  throw error;
+});
 server.listen(PORT, HOST, () => {
   console.log(`RPA Studio · motor real local v${VERSION}`);
   console.log(`Escuchando en http://${HOST}:${PORT} (solo este equipo)`);
