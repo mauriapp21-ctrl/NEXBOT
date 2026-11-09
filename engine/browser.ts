@@ -19,8 +19,10 @@ export async function openBrowser(): Promise<BrowserSession> {
   const context = await chromium.launchPersistentContext(PROFILE_DIR, {
     channel: process.env.ENGINE_BROWSER_CHANNEL ?? "chrome",
     headless: false,
-    viewport: { width: 1280, height: 800 },
-    args: ["--no-first-run", "--no-default-browser-check"],
+    // null: the page uses the real window size. A fixed viewport larger than
+    // the screen cuts off the bottom of the page and scrolling cannot reach it.
+    viewport: null,
+    args: ["--start-maximized", "--no-first-run", "--no-default-browser-check"],
   });
   const page = context.pages()[0] ?? (await context.newPage());
   return {
