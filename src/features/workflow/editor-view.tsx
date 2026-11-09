@@ -9,21 +9,18 @@ import { toast } from "sonner";
 import { ConfirmationDialog } from "@/components/shared/confirmation-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRunAutomation } from "@/features/executions/use-run-automation";
 import { automationService, versionService } from "@/services";
 import { useAutomationStore } from "@/stores/automation-store";
 import type { Automation } from "@/types";
 
-import { ActionLibrary } from "./action-library";
 import { useEditorStore } from "./editor-store";
+import { EditorPanels } from "./editor-panels";
 import { EditorToolbar } from "./editor-toolbar";
-import { NodePropertiesPanel } from "./properties/node-properties-panel";
 import { PublishDialog } from "./publish-dialog";
 import { useDebugger } from "./use-debugger";
 import { useEditorShortcuts } from "./use-editor-shortcuts";
-import { WorkflowCanvas } from "./workflow-canvas";
 
 function Editor({ automation }: { automation: Automation }) {
   const saveWorkflow = useAutomationStore((s) => s.saveWorkflow);
@@ -100,22 +97,11 @@ function Editor({ automation }: { automation: Automation }) {
         onPublish={() => setPublishOpen(true)}
         debuggerControls={debuggerControls}
       />
-      <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-        <ResizablePanel defaultSize="20" minSize="14" maxSize="32" className="hidden md:block">
-          <ActionLibrary onAdd={(type) => useEditorStore.getState().addStep(type)} />
-        </ResizablePanel>
-        <ResizableHandle withHandle className="hidden md:flex" />
-        <ResizablePanel defaultSize="56" minSize="30">
-          <WorkflowCanvas
-            onRequestDeleteNode={requestDeleteNode}
-            onRequestDeleteEdge={(id) => setPendingDelete({ kind: "edge", id })}
-          />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize="24" minSize="18" maxSize="40">
-          <NodePropertiesPanel automation={automation} onDeleteNode={requestDeleteNode} />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+      <EditorPanels
+        automation={automation}
+        onRequestDeleteNode={requestDeleteNode}
+        onRequestDeleteEdge={(id) => setPendingDelete({ kind: "edge", id })}
+      />
 
       <ConfirmationDialog
         open={!!pendingDelete}

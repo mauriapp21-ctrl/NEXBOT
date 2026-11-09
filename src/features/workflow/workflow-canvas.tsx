@@ -123,7 +123,8 @@ export function WorkflowCanvas({ onRequestDeleteNode, onRequestDeleteEdge }: Wor
           pannable
           zoomable
           position="bottom-right"
-          className="!bg-card"
+          // Hidden on small screens, where it would cover the nodes.
+          className="!bg-card max-md:!hidden"
           nodeBorderRadius={6}
           nodeColor={(n) => (n.selected ? "var(--primary)" : "var(--muted-foreground)")}
           maskColor="color-mix(in oklch, var(--background) 70%, transparent)"

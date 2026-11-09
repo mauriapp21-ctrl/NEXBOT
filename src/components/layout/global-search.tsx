@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -61,41 +62,44 @@ export function GlobalSearch() {
         title="Búsqueda global"
         description="Busca pantallas, automatizaciones y acciones."
       >
-        <CommandInput placeholder="Buscar pantallas, bots o acciones…" />
-        <CommandList>
-          <CommandEmpty>No hay resultados para esa búsqueda.</CommandEmpty>
-          <CommandGroup heading="Acciones">
-            <CommandItem onSelect={() => go("/automations/new")}>
-              <Plus aria-hidden /> Crear automatización
-            </CommandItem>
-            <CommandItem onSelect={() => go("/settings")} keywords={["restablecer", "reset", "demo"]}>
-              <RotateCcw aria-hidden /> Restablecer datos de demo
-            </CommandItem>
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Automatizaciones">
-            {automations.map((automation) => (
-              <CommandItem
-                key={automation.id}
-                value={`${automation.name} ${automation.targetSystem}`}
-                onSelect={() => go(`/automations/${automation.id}`)}
-              >
-                <Bot aria-hidden />
-                <span className="truncate">{automation.name}</span>
-                <StatusBadge kind="automation" status={automation.status} size="sm" className="ml-auto" />
+        {/* CommandDialog only provides the dialog; the cmdk context comes from <Command>. */}
+        <Command>
+          <CommandInput placeholder="Buscar pantallas, bots o acciones…" />
+          <CommandList>
+            <CommandEmpty>No hay resultados para esa búsqueda.</CommandEmpty>
+            <CommandGroup heading="Acciones">
+              <CommandItem onSelect={() => go("/automations/new")}>
+                <Plus aria-hidden /> Crear automatización
               </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Pantallas">
-            {allNavItems.map((item) => (
-              <CommandItem key={item.href} keywords={item.keywords} onSelect={() => go(item.href)}>
-                <item.icon aria-hidden /> {item.title}
-                {item.href === "/dashboard" && <CommandShortcut>Inicio</CommandShortcut>}
+              <CommandItem onSelect={() => go("/settings")} keywords={["restablecer", "reset", "demo"]}>
+                <RotateCcw aria-hidden /> Restablecer datos de demo
               </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Automatizaciones">
+              {automations.map((automation) => (
+                <CommandItem
+                  key={automation.id}
+                  value={`${automation.name} ${automation.targetSystem}`}
+                  onSelect={() => go(`/automations/${automation.id}`)}
+                >
+                  <Bot aria-hidden />
+                  <span className="truncate">{automation.name}</span>
+                  <StatusBadge kind="automation" status={automation.status} size="sm" className="ml-auto" />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Pantallas">
+              {allNavItems.map((item) => (
+                <CommandItem key={item.href} keywords={item.keywords} onSelect={() => go(item.href)}>
+                  <item.icon aria-hidden /> {item.title}
+                  {item.href === "/dashboard" && <CommandShortcut>Inicio</CommandShortcut>}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
       </CommandDialog>
     </>
   );
