@@ -8,6 +8,7 @@ import { useExecutionStore } from "@/stores/execution-store";
 import type { Execution, ExecutionLog, ExecutionStepResult, WorkflowNode } from "@/types";
 
 import { resumeRealExecution } from "./real-runner";
+import { brokenStepElement, maybePublishSystemUpdate, reportBrokenStep, usesSimulatedTraceability, withDesign } from "./simulated-target";
 
 /**
  * In-browser execution simulator. It walks the bot's nodes with realistic
@@ -46,8 +47,11 @@ export async function runExecution(executionId: string): Promise<void> {
     let execution = await executionService.get(executionId);
     if (execution.status !== "running" || execution.engine === "local") return;
     const automation = await automationService.get(execution.automationId);
-    const nodes = new Map(orderedSteps(automation.workflow).map((n) => [n.id, n]));
+    const ordered = orderedSteps(automation.workflow);
+    const nodes = new Map(ordered.map((n) => [n.id, n]));
     const issues = await maintenanceService.listIssues(automation.id);
+    const simulatedSystem = usesSimulatedTraceability(automation);
+    const design = await maintenanceService.getTargetDesign();
 
     let steps: ExecutionStepResult[] = execution.steps;
     let logs: ExecutionLog[] = execution.logs.length
@@ -70,17 +74,27 @@ export async function runExecution(executionId: string): Promise<void> {
       if (isStopped(executionId)) return;
 
       const finishedAt = new Date().toISOString();
-      if (node?.needsMaintenance) {
+      const broken = node && simulatedSystem ? brokenStepElement(node, design) : null;
+      if (node && (broken || node.needsMaintenance)) {
         const message = `No se encontró el elemento "${node.elementLabel ?? node.name}" con el selector ${node.selector}.`;
-        const issue = issues.find((i) => i.nodeId === node.id && i.status === "open");
+        const previousNode = ordered[ordered.indexOf(node) - 1];
+        const issue = broken
+          ? await reportBrokenStep({ automation, node, previousNode, element: broken, executionId, design })
+          : issues.find((i) => i.nodeId === node.id && i.status === "open");
+        const screenshot = broken ? issue?.currentScreen : withDesign(node.expectedScreen, design);
         steps = steps.map((s, i) =>
           i === index
-            ? { ...s, status: "error", finishedAt, durationMs: duration + node.timeoutMs, message, screenshot: node.expectedScreen }
+            ? { ...s, status: "error", finishedAt, durationMs: duration + node.timeoutMs, message, screenshot }
             : i > index
               ? { ...s, status: "skipped" }
               : s,
         );
-        logs = [...logs, log("error", message, node.id), log("error", "Ejecución finalizada con errores.")];
+        logs = [
+          ...logs,
+          log("error", message, node.id),
+          ...(issue ? [log("warn", "Se abrió un problema de mantenimiento con selectores alternativos.", node.id)] : []),
+          log("error", "Ejecución finalizada con errores."),
+        ];
         await persist(executionId, {
           steps,
           logs,
@@ -93,9 +107,8 @@ export async function runExecution(executionId: string): Promise<void> {
         return;
       }
 
-      steps = steps.map((s, i) =>
-        i === index ? { ...s, status: "completed", finishedAt, durationMs: duration, screenshot: node?.expectedScreen } : s,
-      );
+      const screenshot = simulatedSystem ? withDesign(node?.expectedScreen, design) : node?.expectedScreen;
+      steps = steps.map((s, i) => (i === index ? { ...s, status: "completed", finishedAt, durationMs: duration, screenshot } : s));
       logs = [...logs, log("info", `${current.name} completado en ${(duration / 1000).toFixed(1)} s.`, current.nodeId)];
       execution = await persist(executionId, { steps, logs });
     }
@@ -108,6 +121,7 @@ export async function runExecution(executionId: string): Promise<void> {
       finishedAt,
       durationMs: Date.now() - new Date(execution.startedAt).getTime(),
     });
+    await maybePublishSystemUpdate(automation, ordered.map((n) => n.selector));
   } finally {
     running.delete(executionId);
   }

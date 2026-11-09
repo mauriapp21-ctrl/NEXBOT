@@ -7,6 +7,7 @@ import type {
   Execution,
   Role,
   SelectorIssue,
+  TargetDesign,
   User,
 } from "@/types";
 
@@ -23,9 +24,15 @@ export interface DemoData {
   users: User[];
   roles: Role[];
   notifications: AppNotification[];
+  targetDesign: TargetDesign;
 }
 
 const SEED = 20_26;
+
+/** The simulated system starts with the original UI and will update once. */
+export function initialTargetDesign(): TargetDesign {
+  return { importLabel: "Importar información", pendingUpdate: true };
+}
 
 /** Proposed fixes for the seeded broken selectors. */
 const issueFixes: Record<string, { detectedLabel: string; proposed: string; alternatives: [string, string, number][] }> = {
@@ -161,5 +168,6 @@ export function createSeed(now: Date = new Date()): DemoData {
     users: createSeedUsers(now),
     roles: createSeedRoles(),
     notifications: createNotifications(executions, selectorIssues, automations, versions, now),
+    targetDesign: initialTargetDesign(),
   };
 }

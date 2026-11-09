@@ -68,7 +68,7 @@ function Editor({ automation }: { automation: Automation }) {
 
   const onRun = async () => {
     const current = isDirty() ? await save() : automation;
-    if (current) await run(current);
+    if (current) await run(current, { navigate: true });
   };
 
   const onPublish = async (notes: string) => {

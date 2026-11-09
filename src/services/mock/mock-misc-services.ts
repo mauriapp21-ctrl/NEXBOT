@@ -3,7 +3,6 @@ import { CURRENT_USER_ID } from "@/mocks/users";
 import type {
   DemoService,
   EngineService,
-  MaintenanceService,
   NotificationService,
   RecorderService,
   UserService,
@@ -29,14 +28,6 @@ export const mockRecorderService: RecorderService = {
     };
     updateDb((db) => ({ automations: db.automations.map((a) => (a.id === automationId ? next : a)) }));
     return clone(next);
-  },
-};
-
-export const mockMaintenanceService: MaintenanceService = {
-  async listIssues(automationId) {
-    await simulateLatency();
-    const issues = getDb().selectorIssues;
-    return clone(automationId ? issues.filter((i) => i.automationId === automationId) : issues);
   },
 };
 

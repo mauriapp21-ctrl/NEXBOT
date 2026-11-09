@@ -11,6 +11,8 @@ import type {
   Role,
   RoleId,
   SelectorIssue,
+  SelectorTestResult,
+  TargetDesign,
   User,
   Workflow,
   WorkflowDiff,
@@ -80,8 +82,33 @@ export interface RecorderService {
   saveRecording(automationId: string, interactions: RecordedInteraction[]): Promise<Automation>;
 }
 
+export type OpenIssueInput = Pick<
+  SelectorIssue,
+  | "automationId"
+  | "nodeId"
+  | "executionId"
+  | "previousSelector"
+  | "previousLabel"
+  | "detectedLabel"
+  | "proposedSelector"
+  | "candidates"
+  | "previousScreen"
+  | "currentScreen"
+>;
+
 export interface MaintenanceService {
   listIssues(automationId?: string): Promise<SelectorIssue[]>;
+  /** Opens (or refreshes) an issue for a broken step and flags the bot. */
+  openIssue(input: OpenIssueInput): Promise<{ issue: SelectorIssue; automation: Automation }>;
+  /** Simulated test of a selector against the current target UI. */
+  testSelector(issueId: string, selector: string): Promise<SelectorTestResult>;
+  /** Replaces the step selector and resolves the issue. */
+  applyFix(issueId: string, selector: string): Promise<{ issue: SelectorIssue; automation: Automation }>;
+  /** UI version of the built-in simulated target system. */
+  getTargetDesign(): Promise<TargetDesign>;
+  setTargetDesign(design: Partial<TargetDesign>): Promise<TargetDesign>;
+  /** Publishes the pending redesign of the simulated system, if any. */
+  publishTargetUpdate(): Promise<TargetDesign | null>;
 }
 
 export interface UserService {

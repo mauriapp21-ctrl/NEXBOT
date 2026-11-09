@@ -50,3 +50,19 @@ export interface WorkflowDiff {
   modified: { before: Step; after: Step; fields: string[] }[];
   unchanged: number;
 }
+
+/** UI version of the built-in simulated target system (Sistema de trazabilidad). */
+export interface TargetDesign {
+  /** Visible label of the import button. */
+  importLabel: string;
+  /** When true, the next successful import publishes the redesigned UI. */
+  pendingUpdate: boolean;
+  updatedAt?: string;
+}
+
+/** Result of testing a selector against the current simulated system. */
+export interface SelectorTestResult {
+  found: boolean;
+  matchedLabel?: string;
+  message: string;
+}

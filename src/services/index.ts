@@ -7,11 +7,11 @@ import { mockExecutionService } from "./mock/mock-execution-service";
 import {
   mockDemoService,
   mockEngineService,
-  mockMaintenanceService,
   mockNotificationService,
   mockRecorderService,
   mockUserService,
 } from "./mock/mock-misc-services";
+import { mockMaintenanceService } from "./mock/mock-maintenance-service";
 import { mockVersionService } from "./mock/mock-version-service";
 
 export const automationService = mockAutomationService;

@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { ExecutionDetailView } from "@/features/executions/detail/execution-detail-view";
 
 export const metadata: Metadata = { title: "Detalle de ejecución" };
 
-export default function DetalleDeEjecucionPage() {
-  return (
-    <PhasePlaceholder
-      title="Detalle de ejecución"
-      description="Progreso paso a paso, consola y capturas."
-      phase={6}
-    />
-  );
+export default async function ExecutionDetailPage({ params }: PageProps<"/executions/[id]">) {
+  const { id } = await params;
+  return <ExecutionDetailView id={id} />;
 }

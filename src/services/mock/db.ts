@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { createSeed, type DemoData } from "@/mocks/seed";
+import { createSeed, initialTargetDesign, type DemoData } from "@/mocks/seed";
 
 /**
  * Fake backend for the prototype. Only mock services touch this store;
@@ -23,6 +23,7 @@ const empty: MockDbState = {
   users: [],
   roles: [],
   notifications: [],
+  targetDesign: initialTargetDesign(),
 };
 
 export const useMockDb = create<MockDbState>()(
@@ -56,7 +57,12 @@ function shiftDates<T>(value: T, ms: number): T {
  * the demo always looks current.
  */
 export function getDb(): MockDbState {
-  const state = useMockDb.getState();
+  let state = useMockDb.getState();
+  // Data saved before a field existed is completed with its default.
+  if (state.seededAt && !state.targetDesign) {
+    useMockDb.setState({ targetDesign: initialTargetDesign() });
+    state = useMockDb.getState();
+  }
   const now = new Date();
   if (!state.seededAt) {
     const seeded = { ...createSeed(now), seededAt: now.toISOString() };
