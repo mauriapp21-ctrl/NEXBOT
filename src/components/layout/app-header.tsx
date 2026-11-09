@@ -8,6 +8,7 @@ import { NotificationsMenu } from "@/components/layout/notifications-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { HeaderLoginButton } from "@/features/auth/engine-access";
 
 export function AppHeader() {
   return (
@@ -22,6 +23,7 @@ export function AppHeader() {
       <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
       <AppBreadcrumbs />
       <div className="ml-auto flex items-center gap-1">
+        <HeaderLoginButton />
         <Button asChild size="sm" className="mr-1 hidden sm:inline-flex">
           <Link href="/automations/new">
             <Plus aria-hidden /> Crear automatización

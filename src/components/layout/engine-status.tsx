@@ -1,11 +1,13 @@
 "use client";
 
-import { MonitorPlay, Server, TerminalSquare } from "lucide-react";
+import { LogIn, MonitorPlay, Server, TerminalSquare } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { ENGINE_ACCESS_TEXT, LoginButton, LogoutButton, useEngineAccess } from "@/features/auth/engine-access";
+import { ENGINE_ACCESS_TEXT, LogoutButton, useEngineAccess } from "@/features/auth/engine-access";
 import { cn } from "@/lib/utils";
 import { useEngineStore } from "@/stores/engine-store";
 
@@ -21,6 +23,7 @@ export function EngineStatusIndicator() {
   const checked = useEngineStore((s) => s.checked);
   const session = useEngineStore((s) => s.session);
   const access = useEngineAccess();
+  const pathname = usePathname();
   const offline = access === "checking" || access === "ready" ? null : ENGINE_ACCESS_TEXT[access];
 
   useEffect(() => {
@@ -31,7 +34,35 @@ export function EngineStatusIndicator() {
   }, []);
 
   const real = !!local;
-  const label = !checked ? "Verificando motor…" : real ? (local.busy ? "Motor real ocupado" : "Motor real conectado") : "Motor simulado";
+  const label = !checked
+    ? "Verificando motor…"
+    : real
+      ? local.busy
+        ? "Motor real ocupado"
+        : "Motor real conectado"
+      : access === "remote-off"
+        ? "Motor real detenido"
+        : "Motor simulado";
+
+  // From another address without a session: the indicator itself leads to the sign-in form.
+  if (access === "remote-login") {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            asChild
+            tooltip="Iniciar sesión para usar el motor real"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+          >
+            <Link href={`/login?next=${encodeURIComponent(pathname)}`}>
+              <LogIn aria-hidden />
+              <span className="truncate text-xs font-medium">Iniciar sesión · motor real</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
 
   return (
     <SidebarMenu>
@@ -110,7 +141,6 @@ export function EngineStatusIndicator() {
                     )}
                   </>
                 )}
-                {access === "remote-login" && <LoginButton size="sm" />}
                 {access === "remote-off" && <LogoutButton />}
               </div>
             )}

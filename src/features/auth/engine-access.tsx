@@ -66,6 +66,22 @@ export function LoginButton({ size = "default" }: { size?: "default" | "sm" }) {
   );
 }
 
+/** Header shortcut, visible on every screen size, only when opened from another address without a session. */
+export function HeaderLoginButton() {
+  const access = useEngineAccess();
+  const pathname = usePathname();
+  if (access !== "remote-login") return null;
+  return (
+    <Button asChild size="sm" variant="outline" className="mr-1" title="Iniciar sesión para usar el motor real">
+      <Link href={`/login?next=${encodeURIComponent(pathname)}`}>
+        <LogIn aria-hidden />
+        <span className="hidden sm:inline">Iniciar sesión</span>
+        <span className="sm:hidden">Entrar</span>
+      </Link>
+    </Button>
+  );
+}
+
 export function LogoutButton({ size = "sm" }: { size?: "default" | "sm" }) {
   const logout = useEngineStore((s) => s.logout);
   return (
