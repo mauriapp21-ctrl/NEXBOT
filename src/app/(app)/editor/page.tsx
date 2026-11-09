@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { AutomationPicker } from "@/features/automations/automation-picker";
 
 export const metadata: Metadata = { title: "Editor visual" };
 
-export default function EditorVisualPage() {
+export default function EditorIndexPage() {
   return (
-    <PhasePlaceholder
+    <AutomationPicker
       title="Editor visual"
-      description="Elige un bot para editar su flujo."
-      phase={5}
+      description="Elige la automatización cuyo flujo quieres editar."
+      basePath="/editor"
+      actionLabel="Editar"
     />
   );
 }

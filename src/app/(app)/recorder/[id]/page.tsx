@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { RecorderView } from "@/features/recorder/recorder-view";
 
-export const metadata: Metadata = { title: "Grabador de interacciones" };
+export const metadata: Metadata = { title: "Grabador" };
 
-export default function GrabadorDeInteraccionesPage() {
-  return (
-    <PhasePlaceholder
-      title="Grabador de interacciones"
-      description="Graba el procedimiento en el navegador simulado."
-      phase={4}
-    />
-  );
+export default async function RecorderPage({ params }: PageProps<"/recorder/[id]">) {
+  const { id } = await params;
+  return <RecorderView id={id} />;
 }

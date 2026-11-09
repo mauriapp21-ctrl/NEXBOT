@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { AutomationPicker } from "@/features/automations/automation-picker";
 
 export const metadata: Metadata = { title: "Versiones" };
 
-export default function VersionesPage() {
+export default function VersionsIndexPage() {
   return (
-    <PhasePlaceholder
+    <AutomationPicker
       title="Versiones"
-      description="Historial de versiones de cada bot."
-      phase={6}
+      description="Elige una automatización para ver su historial de versiones."
+      basePath="/versions"
+      actionLabel="Ver versiones"
     />
   );
 }

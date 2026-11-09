@@ -221,3 +221,9 @@
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* Recorder: dashed outline on recordable elements while recording. */
+.rec-viewport[data-recording="true"] [data-rec]:hover {
+  outline: 2px dashed var(--teal);
+  outline-offset: 2px;
+}

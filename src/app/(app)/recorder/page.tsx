@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { AutomationPicker } from "@/features/automations/automation-picker";
 
 export const metadata: Metadata = { title: "Grabador" };
 
-export default function GrabadorPage() {
+export default function RecorderIndexPage() {
   return (
-    <PhasePlaceholder
+    <AutomationPicker
       title="Grabador"
-      description="Elige un bot para grabar su procedimiento."
-      phase={4}
+      description="Elige la automatización cuyo procedimiento quieres grabar en el navegador simulado."
+      basePath="/recorder"
+      actionLabel="Grabar"
     />
   );
 }
