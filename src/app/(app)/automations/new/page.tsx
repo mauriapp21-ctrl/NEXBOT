@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 
-import { PhasePlaceholder } from "@/components/shared/phase-placeholder";
+import { CreationWizard } from "@/features/automations/wizard/creation-wizard";
 
 export const metadata: Metadata = { title: "Nueva automatización" };
 
-export default function NuevaAutomatizacionPage() {
-  return (
-    <PhasePlaceholder
-      title="Nueva automatización"
-      description="Asistente de creación en cuatro etapas."
-      phase={3}
-    />
-  );
+export default function NewAutomationPage() {
+  return <CreationWizard />;
 }
