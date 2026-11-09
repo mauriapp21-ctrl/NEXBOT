@@ -48,9 +48,8 @@ export function RealRecorderView({ automation }: { automation: Automation }) {
       upsert(updated);
       toast.success("Grabación real guardada", {
         description: `${interactions.length} pasos convertidos en nodos del flujo.${usesSecret ? " La contraseña se reemplazó por la variable secreta {{clave_sitio}}." : ""}`,
-        action: { label: "Abrir editor", onClick: () => router.push(`/editor/${automation.id}`) },
       });
-      router.push(`/automations/${automation.id}`);
+      router.push(`/editor/${automation.id}`);
     } catch (error) {
       setSaving(false);
       toast.error("No se pudo guardar la grabación", { description: (error as Error).message });

@@ -67,10 +67,8 @@ export function RecorderView({ id }: { id: string }) {
       upsert(updated);
       toast.success("Grabación guardada", {
         description: `${recorder.interactions.length} pasos convertidos en nodos del flujo.`,
-        action: { label: "Abrir editor", onClick: () => router.push(`/editor/${automation.id}`) },
       });
-      // The visual editor ships in phase 5; until then the detail page shows the converted steps.
-      router.push(`/automations/${automation.id}`);
+      router.push(`/editor/${automation.id}`);
     } catch (error) {
       setSaving(false);
       toast.error("No se pudo guardar la grabación", { description: (error as Error).message });
