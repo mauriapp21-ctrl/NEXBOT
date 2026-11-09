@@ -40,7 +40,7 @@ El escenario de los datos de ejemplo es una planta procesadora de salmón (traza
 - `pnpm build` — build de producción (debe pasar sin errores al cerrar cada fase).
 - `pnpm lint` — ESLint.
 - `pnpm typecheck` — `tsc --noEmit` (créalo en `package.json` si no existe).
-- `pnpm test:e2e` — Playwright, solo el recorrido de demo (se agrega en la fase final).
+- `pnpm test:e2e` — Playwright con el Chrome instalado: recorre los 7 pasos de la demo (`e2e/demo.spec.ts`) contra un build de producción en el puerto 3100. También corre en el CI.
 
 ## Arquitectura
 
